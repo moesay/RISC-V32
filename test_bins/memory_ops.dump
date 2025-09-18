@@ -1,0 +1,19 @@
+
+memory_ops.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	02a00093          	li	ra,42
+   4:	00102023          	sw	ra,0(zero) # 0 <_start>
+   8:	00002103          	lw	sp,0(zero) # 0 <_start>
+   c:	0ff00493          	li	s1,255
+  10:	00900323          	sb	s1,6(zero) # 6 <_start+0x6>
+  14:	00110113          	addi	sp,sp,1
+  18:	00600403          	lb	s0,6(zero) # 6 <_start+0x6>
+  1c:	fff00393          	li	t2,-1
+  20:	fe7410e3          	bne	s0,t2,0 <_start>
+
+0000000000000024 <_end>:
+  24:	0000006f          	j	24 <_end>

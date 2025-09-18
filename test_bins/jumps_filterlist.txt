@@ -1,0 +1,19 @@
+00000513 li x10,0
+00000593 li x11,0
+024000ef jal x1,2c <function_a>
+00158593 addi x11,x11,1
+0200016f jal x2,30 <function_b>
+00158593 addi x11,x11,1
+00500513 li x10,5
+020001ef jal x3,3c <function_with_param>
+00158593 addi x11,x11,1
+00100513 li x10,1
+0200006f j 48 <test_end>
+00008067 ret
+0080026f jal x4,38 <function_c>
+00010067 jr x2
+00020067 jr x4 # 0 <_start>
+00a50513 addi x10,x10,10
+00018067 jr x3
+00000513 li x10,0
+0000006f j 48 <test_end>

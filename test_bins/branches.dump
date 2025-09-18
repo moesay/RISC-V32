@@ -1,0 +1,56 @@
+
+branches.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00500093          	li	ra,5
+   4:	00500113          	li	sp,5
+   8:	00a00193          	li	gp,10
+   c:	00300213          	li	tp,3
+  10:	ffb00293          	li	t0,-5
+  14:	00500313          	li	t1,5
+  18:	00000513          	li	a0,0
+  1c:	00208463          	beq	ra,sp,24 <test_beq_pass>
+  20:	0500006f          	j	70 <test_fail>
+
+0000000000000024 <test_beq_pass>:
+  24:	04209663          	bne	ra,sp,70 <test_fail>
+  28:	00309463          	bne	ra,gp,30 <test_bne_pass>
+  2c:	0440006f          	j	70 <test_fail>
+
+0000000000000030 <test_bne_pass>:
+  30:	00124463          	blt	tp,ra,38 <test_blt_pass>
+  34:	03c0006f          	j	70 <test_fail>
+
+0000000000000038 <test_blt_pass>:
+  38:	0240cc63          	blt	ra,tp,70 <test_fail>
+  3c:	0020d463          	bge	ra,sp,44 <test_bge_pass>
+  40:	0300006f          	j	70 <test_fail>
+
+0000000000000044 <test_bge_pass>:
+  44:	0011d463          	bge	gp,ra,4c <test_bge2_pass>
+  48:	0280006f          	j	70 <test_fail>
+
+000000000000004c <test_bge2_pass>:
+  4c:	02125263          	bge	tp,ra,70 <test_fail>
+  50:	00536463          	bltu	t1,t0,58 <test_bltu_pass>
+  54:	01c0006f          	j	70 <test_fail>
+
+0000000000000058 <test_bltu_pass>:
+  58:	0062ec63          	bltu	t0,t1,70 <test_fail>
+  5c:	0062f463          	bgeu	t0,t1,64 <test_bgeu_pass>
+  60:	0100006f          	j	70 <test_fail>
+
+0000000000000064 <test_bgeu_pass>:
+  64:	00537663          	bgeu	t1,t0,70 <test_fail>
+  68:	00100513          	li	a0,1
+  6c:	00c0006f          	j	78 <test_end>
+
+0000000000000070 <test_fail>:
+  70:	00000513          	li	a0,0
+  74:	0040006f          	j	78 <test_end>
+
+0000000000000078 <test_end>:
+  78:	0000006f          	j	78 <test_end>

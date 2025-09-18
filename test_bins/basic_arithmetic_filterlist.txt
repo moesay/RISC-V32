@@ -1,0 +1,11 @@
+00500093 li x1,5
+00a00113 li x2,10
+002081b3 add x3,x1,x2
+00302023 sw x3,0(x0) # 0 <_start>
+00002203 lw x4,0(x0) # 0 <_start>
+00320463 beq x4,x3,1c <_pass>
+00c0006f j 24 <_fail>
+00100513 li x10,1
+ffdff06f j 1c <_pass>
+00000513 li x10,0
+ffdff06f j 24 <_fail>

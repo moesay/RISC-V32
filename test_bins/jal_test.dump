@@ -1,0 +1,22 @@
+
+jal_test.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00a00093          	li	ra,10
+   4:	01400113          	li	sp,20
+   8:	002080b3          	add	ra,ra,sp
+   c:	00c000ef          	jal	ra,18 <after_jmp>
+  10:	00100513          	li	a0,1
+  14:	0140006f          	j	28 <end>
+
+0000000000000018 <after_jmp>:
+  18:	00a00213          	li	tp,10
+  1c:	00f00293          	li	t0,15
+  20:	01100093          	li	ra,17
+  24:	00008067          	ret
+
+0000000000000028 <end>:
+  28:	0000006f          	j	28 <end>

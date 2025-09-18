@@ -1,0 +1,22 @@
+
+basic_arithmetic.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00500093          	li	ra,5
+   4:	00a00113          	li	sp,10
+   8:	002081b3          	add	gp,ra,sp
+   c:	00302023          	sw	gp,0(zero) # 0 <_start>
+  10:	00002203          	lw	tp,0(zero) # 0 <_start>
+  14:	00320463          	beq	tp,gp,1c <_pass>
+  18:	00c0006f          	j	24 <_fail>
+
+000000000000001c <_pass>:
+  1c:	00100513          	li	a0,1
+  20:	ffdff06f          	j	1c <_pass>
+
+0000000000000024 <_fail>:
+  24:	00000513          	li	a0,0
+  28:	ffdff06f          	j	24 <_fail>

@@ -1,0 +1,36 @@
+
+load_store.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00000513          	li	a0,0
+   4:	123450b7          	lui	ra,0x12345
+   8:	67808093          	addi	ra,ra,1656 # 12345678 <test_end+0x12345618>
+   c:	aabbd137          	lui	sp,0xaabbd
+  10:	c0010113          	addi	sp,sp,-1024 # ffffffffaabbcc00 <test_end+0xffffffffaabbcba0>
+  14:	0ff00193          	li	gp,255
+  18:	fff00213          	li	tp,-1
+  1c:	01021213          	slli	tp,tp,0x10
+  20:	01025213          	srli	tp,tp,0x10
+  24:	00102023          	sw	ra,0(zero) # 0 <_start>
+  28:	00002283          	lw	t0,0(zero) # 0 <_start>
+  2c:	02509863          	bne	ra,t0,5c <test_fail>
+  30:	00202223          	sw	sp,4(zero) # 4 <_start+0x4>
+  34:	00402303          	lw	t1,4(zero) # 4 <_start+0x4>
+  38:	02611263          	bne	sp,t1,5c <test_fail>
+  3c:	00300423          	sb	gp,8(zero) # 8 <_start+0x8>
+  40:	00800383          	lb	t2,8(zero) # 8 <_start+0x8>
+  44:	fff00413          	li	s0,-1
+  48:	00839a63          	bne	t2,s0,5c <test_fail>
+  4c:	00804383          	lbu	t2,8(zero) # 8 <_start+0x8>
+  50:	00339663          	bne	t2,gp,5c <test_fail>
+  54:	00100513          	li	a0,1
+  58:	0080006f          	j	60 <test_end>
+
+000000000000005c <test_fail>:
+  5c:	00000513          	li	a0,0
+
+0000000000000060 <test_end>:
+  60:	0000006f          	j	60 <test_end>

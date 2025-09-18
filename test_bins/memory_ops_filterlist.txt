@@ -1,0 +1,10 @@
+02a00093 li x1,42
+00102023 sw x1,0(x0) # 0 <_start>
+00002103 lw x2,0(x0) # 0 <_start>
+0ff00493 li x9,255
+00900323 sb x9,6(x0) # 6 <_start+0x6>
+00110113 addi x2,x2,1
+00600403 lb x8,6(x0) # 6 <_start+0x6>
+fff00393 li x7,-1
+fe7410e3 bne x8,x7,0 <_start>
+0000006f j 24 <_end>

@@ -1,0 +1,271 @@
+
+full_test.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00000513          	li	a0,0
+   4:	050000ef          	jal	ra,54 <test_arithmetic>
+   8:	05e01263          	bne	zero,t5,4c <test_fail>
+   c:	09c000ef          	jal	ra,a8 <test_logical>
+  10:	03e01e63          	bne	zero,t5,4c <test_fail>
+  14:	0f4000ef          	jal	ra,108 <test_shift>
+  18:	03e01a63          	bne	zero,t5,4c <test_fail>
+  1c:	15c000ef          	jal	ra,178 <test_compare>
+  20:	03e01663          	bne	zero,t5,4c <test_fail>
+  24:	1a8000ef          	jal	ra,1cc <test_memory>
+  28:	03e01263          	bne	zero,t5,4c <test_fail>
+  2c:	1fc000ef          	jal	ra,228 <test_branch>
+  30:	01e01e63          	bne	zero,t5,4c <test_fail>
+  34:	24c000ef          	jal	ra,280 <test_jump>
+  38:	01e01a63          	bne	zero,t5,4c <test_fail>
+  3c:	27c000ef          	jal	ra,2b8 <test_utype>
+  40:	01e01663          	bne	zero,t5,4c <test_fail>
+  44:	00100513          	li	a0,1
+  48:	2c40006f          	j	30c <test_end>
+
+000000000000004c <test_fail>:
+  4c:	00000513          	li	a0,0
+  50:	2bc0006f          	j	30c <test_end>
+
+0000000000000054 <test_arithmetic>:
+  54:	00500293          	li	t0,5
+  58:	00a00313          	li	t1,10
+  5c:	006283b3          	add	t2,t0,t1
+  60:	00f00413          	li	s0,15
+  64:	02839a63          	bne	t2,s0,98 <arith_fail>
+  68:	405303b3          	sub	t2,t1,t0
+  6c:	00500413          	li	s0,5
+  70:	02839463          	bne	t2,s0,98 <arith_fail>
+  74:	ffb00293          	li	t0,-5
+  78:	00a00313          	li	t1,10
+  7c:	006283b3          	add	t2,t0,t1
+  80:	00500413          	li	s0,5
+  84:	00839a63          	bne	t2,s0,98 <arith_fail>
+  88:	406283b3          	sub	t2,t0,t1
+  8c:	ff100413          	li	s0,-15
+  90:	00839463          	bne	t2,s0,98 <arith_fail>
+  94:	00c0006f          	j	a0 <arith_pass>
+
+0000000000000098 <arith_fail>:
+  98:	00100f13          	li	t5,1
+  9c:	00008067          	ret
+
+00000000000000a0 <arith_pass>:
+  a0:	00000f13          	li	t5,0
+  a4:	00008067          	ret
+
+00000000000000a8 <test_logical>:
+  a8:	00f00293          	li	t0,15
+  ac:	03300313          	li	t1,51
+  b0:	0032f393          	andi	t2,t0,3
+  b4:	00300413          	li	s0,3
+  b8:	04839063          	bne	t2,s0,f8 <logical_fail>
+  bc:	0302e393          	ori	t2,t0,48
+  c0:	03f00413          	li	s0,63
+  c4:	02839a63          	bne	t2,s0,f8 <logical_fail>
+  c8:	00f2c393          	xori	t2,t0,15
+  cc:	02039663          	bnez	t2,f8 <logical_fail>
+  d0:	0062f3b3          	and	t2,t0,t1
+  d4:	00300413          	li	s0,3
+  d8:	02839063          	bne	t2,s0,f8 <logical_fail>
+  dc:	0062e3b3          	or	t2,t0,t1
+  e0:	03f00413          	li	s0,63
+  e4:	00839a63          	bne	t2,s0,f8 <logical_fail>
+  e8:	0062c3b3          	xor	t2,t0,t1
+  ec:	03c00413          	li	s0,60
+  f0:	00839463          	bne	t2,s0,f8 <logical_fail>
+  f4:	00c0006f          	j	100 <logical_pass>
+
+00000000000000f8 <logical_fail>:
+  f8:	00100f13          	li	t5,1
+  fc:	00008067          	ret
+
+0000000000000100 <logical_pass>:
+ 100:	00000f13          	li	t5,0
+ 104:	00008067          	ret
+
+0000000000000108 <test_shift>:
+ 108:	00f00293          	li	t0,15
+ 10c:	00400313          	li	t1,4
+ 110:	00429393          	slli	t2,t0,0x4
+ 114:	0f000413          	li	s0,240
+ 118:	04839863          	bne	t2,s0,168 <shift_fail>
+ 11c:	0023d393          	srli	t2,t2,0x2
+ 120:	03c00413          	li	s0,60
+ 124:	04839263          	bne	t2,s0,168 <shift_fail>
+ 128:	ff800293          	li	t0,-8
+ 12c:	4022d393          	srai	t2,t0,0x2
+ 130:	ffe00413          	li	s0,-2
+ 134:	02839a63          	bne	t2,s0,168 <shift_fail>
+ 138:	006293b3          	sll	t2,t0,t1
+ 13c:	f8000413          	li	s0,-128
+ 140:	02839463          	bne	t2,s0,168 <shift_fail>
+ 144:	0143d393          	srli	t2,t2,0x14
+ 148:	0ffff437          	lui	s0,0xffff
+ 14c:	00fff437          	lui	s0,0xfff
+ 150:	00c45413          	srli	s0,s0,0xc
+ 154:	00839a63          	bne	t2,s0,168 <shift_fail>
+ 158:	4062d3b3          	sra	t2,t0,t1
+ 15c:	fff00413          	li	s0,-1
+ 160:	00839463          	bne	t2,s0,168 <shift_fail>
+ 164:	00c0006f          	j	170 <shift_pass>
+
+0000000000000168 <shift_fail>:
+ 168:	00100f13          	li	t5,1
+ 16c:	00008067          	ret
+
+0000000000000170 <shift_pass>:
+ 170:	00000f13          	li	t5,0
+ 174:	00008067          	ret
+
+0000000000000178 <test_compare>:
+ 178:	00500293          	li	t0,5
+ 17c:	00a00313          	li	t1,10
+ 180:	ffb00393          	li	t2,-5
+ 184:	00a2a413          	slti	s0,t0,10
+ 188:	00100493          	li	s1,1
+ 18c:	02941863          	bne	s0,s1,1bc <compare_fail>
+ 190:	00532413          	slti	s0,t1,5
+ 194:	02041463          	bnez	s0,1bc <compare_fail>
+ 198:	0003a413          	slti	s0,t2,0
+ 19c:	02941063          	bne	s0,s1,1bc <compare_fail>
+ 1a0:	0013b413          	seqz	s0,t2
+ 1a4:	00041c63          	bnez	s0,1bc <compare_fail>
+ 1a8:	0062a433          	slt	s0,t0,t1
+ 1ac:	00941863          	bne	s0,s1,1bc <compare_fail>
+ 1b0:	0053b433          	sltu	s0,t2,t0
+ 1b4:	00041463          	bnez	s0,1bc <compare_fail>
+ 1b8:	00c0006f          	j	1c4 <compare_pass>
+
+00000000000001bc <compare_fail>:
+ 1bc:	00100f13          	li	t5,1
+ 1c0:	00008067          	ret
+
+00000000000001c4 <compare_pass>:
+ 1c4:	00000f13          	li	t5,0
+ 1c8:	00008067          	ret
+
+00000000000001cc <test_memory>:
+ 1cc:	12300293          	li	t0,291
+ 1d0:	0aa00313          	li	t1,170
+ 1d4:	0bb00393          	li	t2,187
+ 1d8:	00502023          	sw	t0,0(zero) # 0 <_start>
+ 1dc:	00002403          	lw	s0,0(zero) # 0 <_start>
+ 1e0:	02829c63          	bne	t0,s0,218 <memory_fail>
+ 1e4:	00701223          	sh	t2,4(zero) # 4 <_start+0x4>
+ 1e8:	00401403          	lh	s0,4(zero) # 4 <_start+0x4>
+ 1ec:	02741663          	bne	s0,t2,218 <memory_fail>
+ 1f0:	00405403          	lhu	s0,4(zero) # 4 <_start+0x4>
+ 1f4:	02741263          	bne	s0,t2,218 <memory_fail>
+ 1f8:	0ff00493          	li	s1,255
+ 1fc:	00900323          	sb	s1,6(zero) # 6 <_start+0x6>
+ 200:	00600403          	lb	s0,6(zero) # 6 <_start+0x6>
+ 204:	fff00393          	li	t2,-1
+ 208:	00741863          	bne	s0,t2,218 <memory_fail>
+ 20c:	00604403          	lbu	s0,6(zero) # 6 <_start+0x6>
+ 210:	00941463          	bne	s0,s1,218 <memory_fail>
+ 214:	00c0006f          	j	220 <memory_pass>
+
+0000000000000218 <memory_fail>:
+ 218:	00100f13          	li	t5,1
+ 21c:	00008067          	ret
+
+0000000000000220 <memory_pass>:
+ 220:	00000f13          	li	t5,0
+ 224:	00008067          	ret
+
+0000000000000228 <test_branch>:
+ 228:	00500293          	li	t0,5
+ 22c:	00500313          	li	t1,5
+ 230:	00a00393          	li	t2,10
+ 234:	ffb00413          	li	s0,-5
+ 238:	00628463          	beq	t0,t1,240 <beq_ok>
+ 23c:	0340006f          	j	270 <branch_fail>
+
+0000000000000240 <beq_ok>:
+ 240:	00729463          	bne	t0,t2,248 <bne_ok>
+ 244:	02c0006f          	j	270 <branch_fail>
+
+0000000000000248 <bne_ok>:
+ 248:	0072c463          	blt	t0,t2,250 <blt_ok>
+ 24c:	0240006f          	j	270 <branch_fail>
+
+0000000000000250 <blt_ok>:
+ 250:	0053d463          	bge	t2,t0,258 <bge_ok>
+ 254:	01c0006f          	j	270 <branch_fail>
+
+0000000000000258 <bge_ok>:
+ 258:	00100493          	li	s1,1
+ 25c:	0084e463          	bltu	s1,s0,264 <bltu_ok>
+ 260:	0100006f          	j	270 <branch_fail>
+
+0000000000000264 <bltu_ok>:
+ 264:	00947463          	bgeu	s0,s1,26c <bgeu_ok>
+ 268:	0080006f          	j	270 <branch_fail>
+
+000000000000026c <bgeu_ok>:
+ 26c:	00c0006f          	j	278 <branch_pass>
+
+0000000000000270 <branch_fail>:
+ 270:	00100f13          	li	t5,1
+ 274:	00008067          	ret
+
+0000000000000278 <branch_pass>:
+ 278:	00000f13          	li	t5,0
+ 27c:	00008067          	ret
+
+0000000000000280 <test_jump>:
+ 280:	0080016f          	jal	sp,288 <jal_test>
+ 284:	0240006f          	j	2a8 <jump_fail>
+
+0000000000000288 <jal_test>:
+ 288:	00300213          	li	tp,3
+ 28c:	00000217          	auipc	tp,0x0
+ 290:	01020213          	addi	tp,tp,16 # 29c <jalr_target>
+ 294:	000201e7          	jalr	gp,tp # 0 <_start>
+ 298:	0100006f          	j	2a8 <jump_fail>
+
+000000000000029c <jalr_target>:
+ 29c:	00010663          	beqz	sp,2a8 <jump_fail>
+ 2a0:	00018463          	beqz	gp,2a8 <jump_fail>
+ 2a4:	00c0006f          	j	2b0 <jump_pass>
+
+00000000000002a8 <jump_fail>:
+ 2a8:	00100f13          	li	t5,1
+ 2ac:	00008067          	ret
+
+00000000000002b0 <jump_pass>:
+ 2b0:	00000f13          	li	t5,0
+ 2b4:	00008067          	ret
+
+00000000000002b8 <test_utype>:
+ 2b8:	123452b7          	lui	t0,0x12345
+ 2bc:	12345337          	lui	t1,0x12345
+ 2c0:	fffff3b7          	lui	t2,0xfffff
+ 2c4:	00030313          	mv	t1,t1
+ 2c8:	02629a63          	bne	t0,t1,2fc <utype_fail>
+ 2cc:	00000297          	auipc	t0,0x0
+ 2d0:	00000013          	nop
+ 2d4:	00000317          	auipc	t1,0x0
+ 2d8:	405303b3          	sub	t2,t1,t0
+ 2dc:	00800413          	li	s0,8
+ 2e0:	00839e63          	bne	t2,s0,2fc <utype_fail>
+ 2e4:	00100297          	auipc	t0,0x100
+ 2e8:	00100317          	auipc	t1,0x100
+ 2ec:	405303b3          	sub	t2,t1,t0
+ 2f0:	00400413          	li	s0,4
+ 2f4:	00839463          	bne	t2,s0,2fc <utype_fail>
+ 2f8:	00c0006f          	j	304 <utype_pass>
+
+00000000000002fc <utype_fail>:
+ 2fc:	00100f13          	li	t5,1
+ 300:	00008067          	ret
+
+0000000000000304 <utype_pass>:
+ 304:	00000f13          	li	t5,0
+ 308:	00008067          	ret
+
+000000000000030c <test_end>:
+ 30c:	0000006f          	j	30c <test_end>

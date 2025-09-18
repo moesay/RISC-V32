@@ -1,0 +1,38 @@
+
+jumps.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00000513          	li	a0,0
+   4:	00000593          	li	a1,0
+   8:	024000ef          	jal	ra,2c <function_a>
+   c:	00158593          	addi	a1,a1,1
+  10:	0200016f          	jal	sp,30 <function_b>
+  14:	00158593          	addi	a1,a1,1
+  18:	00500513          	li	a0,5
+  1c:	020001ef          	jal	gp,3c <function_with_param>
+  20:	00158593          	addi	a1,a1,1
+  24:	00100513          	li	a0,1
+  28:	0200006f          	j	48 <test_end>
+
+000000000000002c <function_a>:
+  2c:	00008067          	ret
+
+0000000000000030 <function_b>:
+  30:	0080026f          	jal	tp,38 <function_c>
+  34:	00010067          	jr	sp
+
+0000000000000038 <function_c>:
+  38:	00020067          	jr	tp # 0 <_start>
+
+000000000000003c <function_with_param>:
+  3c:	00a50513          	addi	a0,a0,10
+  40:	00018067          	jr	gp
+
+0000000000000044 <test_fail>:
+  44:	00000513          	li	a0,0
+
+0000000000000048 <test_end>:
+  48:	0000006f          	j	48 <test_end>

@@ -1,0 +1,31 @@
+00500093 li x1,5
+00500113 li x2,5
+00a00193 li x3,10
+00300213 li x4,3
+ffb00293 li x5,-5
+00500313 li x6,5
+00000513 li x10,0
+00208463 beq x1,x2,24 <test_beq_pass>
+0500006f j 70 <test_fail>
+04209663 bne x1,x2,70 <test_fail>
+00309463 bne x1,x3,30 <test_bne_pass>
+0440006f j 70 <test_fail>
+00124463 blt x4,x1,38 <test_blt_pass>
+03c0006f j 70 <test_fail>
+0240cc63 blt x1,x4,70 <test_fail>
+0020d463 bge x1,x2,44 <test_bge_pass>
+0300006f j 70 <test_fail>
+0011d463 bge x3,x1,4c <test_bge2_pass>
+0280006f j 70 <test_fail>
+02125263 bge x4,x1,70 <test_fail>
+00536463 bltu x6,x5,58 <test_bltu_pass>
+01c0006f j 70 <test_fail>
+0062ec63 bltu x5,x6,70 <test_fail>
+0062f463 bgeu x5,x6,64 <test_bgeu_pass>
+0100006f j 70 <test_fail>
+00537663 bgeu x6,x5,70 <test_fail>
+00100513 li x10,1
+00c0006f j 78 <test_end>
+00000513 li x10,0
+0040006f j 78 <test_end>
+0000006f j 78 <test_end>
