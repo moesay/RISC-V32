@@ -22,7 +22,7 @@ def assemble_and_extract(asm_file):
 
     with open(dump_file, "w") as f:
         subprocess.run(
-            ["riscv64-unknown-elf-objdump", "-d", elf_file],
+            ["riscv64-unknown-elf-objdump", "-d", "-Mnumeric", elf_file],
             stdout=f,
             check=True
         )
