@@ -1,10 +1,11 @@
-# RISC-V RV32I Implementation
-_Yet another RV32I Implementation? Yes, also for educational/practicing purposes. I know that you already know about it, but this is the README.md, I have to explain the project_ :( . \*grabs the mic\*
+# RISC-V RV32IM Implementation
+_Yet another RV32IM Implementation? Yes, also for educational/practicing purposes. I know that you already know about it, but this is the README.md, I have to explain the project_ :( . \*grabs the mic\*
 
 
 ## Overview
-This project implements a fully functional RISC-V RV32I ISA processor in Verilog/SystemVerilog, featuring:
+This project implements a fully functional RISC-V RV32IM ISA processor in Verilog/SystemVerilog, featuring:
 * __Complete RV32I ISA support__: All base integer instructions
+* __Complete RV32M ISA support__: All Integer Division and Multiplication instructions
 * __Single-cycle architecture__: Simple and efficient design
 * __Modular design__: Clean separation of components
 * __Comprehensive verification__: Extensive testbench suite
@@ -71,7 +72,6 @@ TCL is also used to do full processor validation. System Test and Integration Te
 ## Future Enhancements
 
 I will keep updating the project and implementing whatever I can, but on top of the list:
-* RV32M extension
 * RV32F extension
 * RV32C extension
 * Pipelined Implementation
