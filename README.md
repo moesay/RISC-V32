@@ -72,6 +72,11 @@ TCL is also used to do full processor validation. System Test and Integration Te
 ## Future Enhancements
 
 I will keep updating the project and implementing whatever I can, but on top of the list:
-* RV32F extension
-* RV32C extension
-* Pipelined Implementation
+
+- [x] RV32M extension
+
+- [ ] RV32F extension
+
+- [ ] RV32I extension
+
+- [ ] RV32C extension
