@@ -35,7 +35,7 @@ $(TARGETS):
 	@echo "Verilating $(@)"
 	$(VERILATOR_CMD) $(SRC_DIR)/$(@).v $(TB_DIR)/tb_$(@).sv $(INCLUDE) -DTEST_PROGRAM=\"$(TEST_PROGRAM)\"
 
-.PHONY: test clean all
+.PHONY: test clean all wave
 
 test:
 	./tcl/run_tests.tcl
@@ -57,5 +57,5 @@ asm-%:
 	mv $*.* ./test_bins/
 	mv $*_filterlist.txt ./test_bins/
 
-wave: all
+wave:
 	gtkwave dump.vcd &

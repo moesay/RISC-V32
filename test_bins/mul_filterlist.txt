@@ -1,0 +1,86 @@
+00000513 li x10,0
+038000ef jal x1,3c <test_mul_basic>
+02b01663 bne x0,x11,34 <test_fail>
+070000ef jal x1,7c <test_mulh>
+02b01263 bne x0,x11,34 <test_fail>
+090000ef jal x1,a4 <test_mulhu>
+00b01e63 bne x0,x11,34 <test_fail>
+0b4000ef jal x1,d0 <test_mulhsu>
+00b01a63 bne x0,x11,34 <test_fail>
+0d4000ef jal x1,f8 <test_mul_edge_cases>
+00b01663 bne x0,x11,34 <test_fail>
+00100513 li x10,1
+1240006f j 154 <test_end>
+00000513 li x10,0
+11c0006f j 154 <test_end>
+00500293 li x5,5
+00600313 li x6,6
+026283b3 mul x7,x5,x6
+01e00413 li x8,30
+0e839c63 bne x7,x8,144 <mul_fail>
+ffc00293 li x5,-4
+00700313 li x6,7
+026283b3 mul x7,x5,x6
+fe400413 li x8,-28
+0e839263 bne x7,x8,144 <mul_fail>
+ffd00293 li x5,-3
+ffb00313 li x6,-5
+026283b3 mul x7,x5,x6
+00f00413 li x8,15
+0c839863 bne x7,x8,144 <mul_fail>
+0d40006f j 14c <mul_pass>
+123452b7 lui x5,0x12345
+6789a337 lui x6,0x6789a
+026293b3 mulh x7,x5,x6
+0a038e63 beqz x7,144 <mul_fail>
+c1800293 li x5,-1000
+3e800313 li x6,1000
+026293b3 mulh x7,x5,x6
+fff00413 li x8,-1
+0a839463 bne x7,x8,144 <mul_fail>
+0ac0006f j 14c <mul_pass>
+fffff2b7 lui x5,0xfffff
+00002337 lui x6,0x2
+0262b3b3 mulhu x7,x5,x6
+00002437 lui x8,0x2
+fff40413 addi x8,x8,-1 # 1fff <test_end+0x1eab>
+000024b7 lui x9,0x2
+01ff0537 lui x10,0x1ff0
+00c55513 srli x10,x10,0xc
+08a3c063 blt x7,x10,144 <mul_fail>
+0693de63 bge x7,x9,144 <mul_fail>
+0800006f j 14c <mul_pass>
+c1800293 li x5,-1000
+00001337 lui x6,0x1
+0262a3b3 mulhsu x7,x5,x6
+fff00413 li x8,-1
+06839263 bne x7,x8,144 <mul_fail>
+3e800293 li x5,1000
+00001337 lui x6,0x1
+0262a3b3 mulhsu x7,x5,x6
+04039a63 bnez x7,144 <mul_fail>
+0580006f j 14c <mul_pass>
+030392b7 lui x5,0x3039
+00000313 li x6,0
+026283b3 mul x7,x5,x6
+04039063 bnez x7,144 <mul_fail>
+026293b3 mulh x7,x5,x6
+02039c63 bnez x7,144 <mul_fail>
+030392b7 lui x5,0x3039
+00100313 li x6,1
+026283b3 mul x7,x5,x6
+03039437 lui x8,0x3039
+02839263 bne x7,x8,144 <mul_fail>
+fff00293 li x5,-1
+fff00313 li x6,-1
+026283b3 mul x7,x5,x6
+00100413 li x8,1
+00839863 bne x7,x8,144 <mul_fail>
+026293b3 mulh x7,x5,x6
+00039463 bnez x7,144 <mul_fail>
+00c0006f j 14c <mul_pass>
+00100593 li x11,1
+00008067 ret
+00000593 li x11,0
+00008067 ret
+0000006f j 154 <test_end>

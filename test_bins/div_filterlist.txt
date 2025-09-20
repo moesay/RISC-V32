@@ -1,0 +1,108 @@
+00000513 li x10,0
+038000ef jal x1,3c <test_div>
+02501663 bne x0,x5,34 <test_fail>
+080000ef jal x1,8c <test_divu>
+02501263 bne x0,x5,34 <test_fail>
+0a8000ef jal x1,bc <test_rem>
+00501e63 bne x0,x5,34 <test_fail>
+0f0000ef jal x1,10c <test_remu>
+00501a63 bne x0,x5,34 <test_fail>
+124000ef jal x1,148 <test_div_edge_cases>
+00501663 bne x0,x5,34 <test_fail>
+00100513 li x10,1
+17c0006f j 1ac <test_end>
+00000513 li x10,0
+1740006f j 1ac <test_end>
+01400313 li x6,20
+00300393 li x7,3
+02734433 div x8,x6,x7
+00600493 li x9,6
+14941863 bne x8,x9,19c <div_fail>
+fec00313 li x6,-20
+02734433 div x8,x6,x7
+ffa00493 li x9,-6
+14941063 bne x8,x9,19c <div_fail>
+01400313 li x6,20
+ffd00393 li x7,-3
+02734433 div x8,x6,x7
+ffa00493 li x9,-6
+12941663 bne x8,x9,19c <div_fail>
+fec00313 li x6,-20
+ffd00393 li x7,-3
+02734433 div x8,x6,x7
+00600493 li x9,6
+10941c63 bne x8,x9,19c <div_fail>
+11c0006f j 1a4 <div_pass>
+01400313 li x6,20
+00300393 li x7,3
+02735433 divu x8,x6,x7
+00600493 li x9,6
+10941063 bne x8,x9,19c <div_fail>
+12345337 lui x6,0x12345
+000013b7 lui x7,0x1
+02735433 divu x8,x6,x7
+123454b7 lui x9,0x12345
+00c4d493 srli x9,x9,0xc
+0e941463 bne x8,x9,19c <div_fail>
+0ec0006f j 1a4 <div_pass>
+01400313 li x6,20
+00300393 li x7,3
+02736433 rem x8,x6,x7
+00200493 li x9,2
+0c941863 bne x8,x9,19c <div_fail>
+fec00313 li x6,-20
+02736433 rem x8,x6,x7
+ffe00493 li x9,-2
+0c941063 bne x8,x9,19c <div_fail>
+01400313 li x6,20
+ffd00393 li x7,-3
+02736433 rem x8,x6,x7
+00200493 li x9,2
+0a941663 bne x8,x9,19c <div_fail>
+fec00313 li x6,-20
+ffd00393 li x7,-3
+02736433 rem x8,x6,x7
+ffe00493 li x9,-2
+08941c63 bne x8,x9,19c <div_fail>
+09c0006f j 1a4 <div_pass>
+01400313 li x6,20
+00300393 li x7,3
+02737433 remu x8,x6,x7
+00200493 li x9,2
+08941063 bne x8,x9,19c <div_fail>
+12345337 lui x6,0x12345
+000013b7 lui x7,0x1
+02737433 remu x8,x6,x7
+06041863 bnez x8,19c <div_fail>
+12345337 lui x6,0x12345
+12330313 addi x6,x6,291 # 12345123 <test_end+0x12344f77>
+02737433 remu x8,x6,x7
+12300493 li x9,291
+04941e63 bne x8,x9,19c <div_fail>
+0600006f j 1a4 <div_pass>
+03039337 lui x6,0x3039
+00c35313 srli x6,x6,0xc
+00000393 li x7,0
+02734433 div x8,x6,x7
+fff00493 li x9,-1
+04941063 bne x8,x9,19c <div_fail>
+02735433 divu x8,x6,x7
+02941c63 bne x8,x9,19c <div_fail>
+02736433 rem x8,x6,x7
+030394b7 lui x9,0x3039
+00c4d493 srli x9,x9,0xc
+02941463 bne x8,x9,19c <div_fail>
+02737433 remu x8,x6,x7
+02941063 bne x8,x9,19c <div_fail>
+00100313 li x6,1
+01f31313 slli x6,x6,0x1f
+fff00393 li x7,-1
+02734433 div x8,x6,x7
+800004b7 lui x9,0x80000
+00941463 bne x8,x9,19c <div_fail>
+00c0006f j 1a4 <div_pass>
+00100293 li x5,1
+00008067 ret
+00000293 li x5,0
+00008067 ret
+0000006f j 1ac <test_end>

@@ -1,0 +1,111 @@
+
+mul.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00000513          	li	x10,0
+   4:	038000ef          	jal	x1,3c <test_mul_basic>
+   8:	02b01663          	bne	x0,x11,34 <test_fail>
+   c:	070000ef          	jal	x1,7c <test_mulh>
+  10:	02b01263          	bne	x0,x11,34 <test_fail>
+  14:	090000ef          	jal	x1,a4 <test_mulhu>
+  18:	00b01e63          	bne	x0,x11,34 <test_fail>
+  1c:	0b4000ef          	jal	x1,d0 <test_mulhsu>
+  20:	00b01a63          	bne	x0,x11,34 <test_fail>
+  24:	0d4000ef          	jal	x1,f8 <test_mul_edge_cases>
+  28:	00b01663          	bne	x0,x11,34 <test_fail>
+  2c:	00100513          	li	x10,1
+  30:	1240006f          	j	154 <test_end>
+
+0000000000000034 <test_fail>:
+  34:	00000513          	li	x10,0
+  38:	11c0006f          	j	154 <test_end>
+
+000000000000003c <test_mul_basic>:
+  3c:	00500293          	li	x5,5
+  40:	00600313          	li	x6,6
+  44:	026283b3          	mul	x7,x5,x6
+  48:	01e00413          	li	x8,30
+  4c:	0e839c63          	bne	x7,x8,144 <mul_fail>
+  50:	ffc00293          	li	x5,-4
+  54:	00700313          	li	x6,7
+  58:	026283b3          	mul	x7,x5,x6
+  5c:	fe400413          	li	x8,-28
+  60:	0e839263          	bne	x7,x8,144 <mul_fail>
+  64:	ffd00293          	li	x5,-3
+  68:	ffb00313          	li	x6,-5
+  6c:	026283b3          	mul	x7,x5,x6
+  70:	00f00413          	li	x8,15
+  74:	0c839863          	bne	x7,x8,144 <mul_fail>
+  78:	0d40006f          	j	14c <mul_pass>
+
+000000000000007c <test_mulh>:
+  7c:	123452b7          	lui	x5,0x12345
+  80:	6789a337          	lui	x6,0x6789a
+  84:	026293b3          	mulh	x7,x5,x6
+  88:	0a038e63          	beqz	x7,144 <mul_fail>
+  8c:	c1800293          	li	x5,-1000
+  90:	3e800313          	li	x6,1000
+  94:	026293b3          	mulh	x7,x5,x6
+  98:	fff00413          	li	x8,-1
+  9c:	0a839463          	bne	x7,x8,144 <mul_fail>
+  a0:	0ac0006f          	j	14c <mul_pass>
+
+00000000000000a4 <test_mulhu>:
+  a4:	fffff2b7          	lui	x5,0xfffff
+  a8:	00002337          	lui	x6,0x2
+  ac:	0262b3b3          	mulhu	x7,x5,x6
+  b0:	00002437          	lui	x8,0x2
+  b4:	fff40413          	addi	x8,x8,-1 # 1fff <test_end+0x1eab>
+  b8:	000024b7          	lui	x9,0x2
+  bc:	01ff0537          	lui	x10,0x1ff0
+  c0:	00c55513          	srli	x10,x10,0xc
+  c4:	08a3c063          	blt	x7,x10,144 <mul_fail>
+  c8:	0693de63          	bge	x7,x9,144 <mul_fail>
+  cc:	0800006f          	j	14c <mul_pass>
+
+00000000000000d0 <test_mulhsu>:
+  d0:	c1800293          	li	x5,-1000
+  d4:	00001337          	lui	x6,0x1
+  d8:	0262a3b3          	mulhsu	x7,x5,x6
+  dc:	fff00413          	li	x8,-1
+  e0:	06839263          	bne	x7,x8,144 <mul_fail>
+  e4:	3e800293          	li	x5,1000
+  e8:	00001337          	lui	x6,0x1
+  ec:	0262a3b3          	mulhsu	x7,x5,x6
+  f0:	04039a63          	bnez	x7,144 <mul_fail>
+  f4:	0580006f          	j	14c <mul_pass>
+
+00000000000000f8 <test_mul_edge_cases>:
+  f8:	030392b7          	lui	x5,0x3039
+  fc:	00000313          	li	x6,0
+ 100:	026283b3          	mul	x7,x5,x6
+ 104:	04039063          	bnez	x7,144 <mul_fail>
+ 108:	026293b3          	mulh	x7,x5,x6
+ 10c:	02039c63          	bnez	x7,144 <mul_fail>
+ 110:	030392b7          	lui	x5,0x3039
+ 114:	00100313          	li	x6,1
+ 118:	026283b3          	mul	x7,x5,x6
+ 11c:	03039437          	lui	x8,0x3039
+ 120:	02839263          	bne	x7,x8,144 <mul_fail>
+ 124:	fff00293          	li	x5,-1
+ 128:	fff00313          	li	x6,-1
+ 12c:	026283b3          	mul	x7,x5,x6
+ 130:	00100413          	li	x8,1
+ 134:	00839863          	bne	x7,x8,144 <mul_fail>
+ 138:	026293b3          	mulh	x7,x5,x6
+ 13c:	00039463          	bnez	x7,144 <mul_fail>
+ 140:	00c0006f          	j	14c <mul_pass>
+
+0000000000000144 <mul_fail>:
+ 144:	00100593          	li	x11,1
+ 148:	00008067          	ret
+
+000000000000014c <mul_pass>:
+ 14c:	00000593          	li	x11,0
+ 150:	00008067          	ret
+
+0000000000000154 <test_end>:
+ 154:	0000006f          	j	154 <test_end>

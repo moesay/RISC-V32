@@ -28,7 +28,7 @@ imem#(.MEM_SIZE_KB(2)) imemMod
 
 wire regWrite, memRead, memWrite, branch, jump, aluSrcImm, jalr;
 wire [2:0] funct3;
-wire [3:0] aluOp;
+wire [15:0] aluOp;
 wire [2:0] immType;
 
 decoder decoderMod

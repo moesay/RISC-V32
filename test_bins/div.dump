@@ -1,0 +1,133 @@
+
+div.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00000513          	li	x10,0
+   4:	038000ef          	jal	x1,3c <test_div>
+   8:	02501663          	bne	x0,x5,34 <test_fail>
+   c:	080000ef          	jal	x1,8c <test_divu>
+  10:	02501263          	bne	x0,x5,34 <test_fail>
+  14:	0a8000ef          	jal	x1,bc <test_rem>
+  18:	00501e63          	bne	x0,x5,34 <test_fail>
+  1c:	0f0000ef          	jal	x1,10c <test_remu>
+  20:	00501a63          	bne	x0,x5,34 <test_fail>
+  24:	124000ef          	jal	x1,148 <test_div_edge_cases>
+  28:	00501663          	bne	x0,x5,34 <test_fail>
+  2c:	00100513          	li	x10,1
+  30:	17c0006f          	j	1ac <test_end>
+
+0000000000000034 <test_fail>:
+  34:	00000513          	li	x10,0
+  38:	1740006f          	j	1ac <test_end>
+
+000000000000003c <test_div>:
+  3c:	01400313          	li	x6,20
+  40:	00300393          	li	x7,3
+  44:	02734433          	div	x8,x6,x7
+  48:	00600493          	li	x9,6
+  4c:	14941863          	bne	x8,x9,19c <div_fail>
+  50:	fec00313          	li	x6,-20
+  54:	02734433          	div	x8,x6,x7
+  58:	ffa00493          	li	x9,-6
+  5c:	14941063          	bne	x8,x9,19c <div_fail>
+  60:	01400313          	li	x6,20
+  64:	ffd00393          	li	x7,-3
+  68:	02734433          	div	x8,x6,x7
+  6c:	ffa00493          	li	x9,-6
+  70:	12941663          	bne	x8,x9,19c <div_fail>
+  74:	fec00313          	li	x6,-20
+  78:	ffd00393          	li	x7,-3
+  7c:	02734433          	div	x8,x6,x7
+  80:	00600493          	li	x9,6
+  84:	10941c63          	bne	x8,x9,19c <div_fail>
+  88:	11c0006f          	j	1a4 <div_pass>
+
+000000000000008c <test_divu>:
+  8c:	01400313          	li	x6,20
+  90:	00300393          	li	x7,3
+  94:	02735433          	divu	x8,x6,x7
+  98:	00600493          	li	x9,6
+  9c:	10941063          	bne	x8,x9,19c <div_fail>
+  a0:	12345337          	lui	x6,0x12345
+  a4:	000013b7          	lui	x7,0x1
+  a8:	02735433          	divu	x8,x6,x7
+  ac:	123454b7          	lui	x9,0x12345
+  b0:	00c4d493          	srli	x9,x9,0xc
+  b4:	0e941463          	bne	x8,x9,19c <div_fail>
+  b8:	0ec0006f          	j	1a4 <div_pass>
+
+00000000000000bc <test_rem>:
+  bc:	01400313          	li	x6,20
+  c0:	00300393          	li	x7,3
+  c4:	02736433          	rem	x8,x6,x7
+  c8:	00200493          	li	x9,2
+  cc:	0c941863          	bne	x8,x9,19c <div_fail>
+  d0:	fec00313          	li	x6,-20
+  d4:	02736433          	rem	x8,x6,x7
+  d8:	ffe00493          	li	x9,-2
+  dc:	0c941063          	bne	x8,x9,19c <div_fail>
+  e0:	01400313          	li	x6,20
+  e4:	ffd00393          	li	x7,-3
+  e8:	02736433          	rem	x8,x6,x7
+  ec:	00200493          	li	x9,2
+  f0:	0a941663          	bne	x8,x9,19c <div_fail>
+  f4:	fec00313          	li	x6,-20
+  f8:	ffd00393          	li	x7,-3
+  fc:	02736433          	rem	x8,x6,x7
+ 100:	ffe00493          	li	x9,-2
+ 104:	08941c63          	bne	x8,x9,19c <div_fail>
+ 108:	09c0006f          	j	1a4 <div_pass>
+
+000000000000010c <test_remu>:
+ 10c:	01400313          	li	x6,20
+ 110:	00300393          	li	x7,3
+ 114:	02737433          	remu	x8,x6,x7
+ 118:	00200493          	li	x9,2
+ 11c:	08941063          	bne	x8,x9,19c <div_fail>
+ 120:	12345337          	lui	x6,0x12345
+ 124:	000013b7          	lui	x7,0x1
+ 128:	02737433          	remu	x8,x6,x7
+ 12c:	06041863          	bnez	x8,19c <div_fail>
+ 130:	12345337          	lui	x6,0x12345
+ 134:	12330313          	addi	x6,x6,291 # 12345123 <test_end+0x12344f77>
+ 138:	02737433          	remu	x8,x6,x7
+ 13c:	12300493          	li	x9,291
+ 140:	04941e63          	bne	x8,x9,19c <div_fail>
+ 144:	0600006f          	j	1a4 <div_pass>
+
+0000000000000148 <test_div_edge_cases>:
+ 148:	03039337          	lui	x6,0x3039
+ 14c:	00c35313          	srli	x6,x6,0xc
+ 150:	00000393          	li	x7,0
+ 154:	02734433          	div	x8,x6,x7
+ 158:	fff00493          	li	x9,-1
+ 15c:	04941063          	bne	x8,x9,19c <div_fail>
+ 160:	02735433          	divu	x8,x6,x7
+ 164:	02941c63          	bne	x8,x9,19c <div_fail>
+ 168:	02736433          	rem	x8,x6,x7
+ 16c:	030394b7          	lui	x9,0x3039
+ 170:	00c4d493          	srli	x9,x9,0xc
+ 174:	02941463          	bne	x8,x9,19c <div_fail>
+ 178:	02737433          	remu	x8,x6,x7
+ 17c:	02941063          	bne	x8,x9,19c <div_fail>
+ 180:	00100313          	li	x6,1
+ 184:	01f31313          	slli	x6,x6,0x1f
+ 188:	fff00393          	li	x7,-1
+ 18c:	02734433          	div	x8,x6,x7
+ 190:	800004b7          	lui	x9,0x80000
+ 194:	00941463          	bne	x8,x9,19c <div_fail>
+ 198:	00c0006f          	j	1a4 <div_pass>
+
+000000000000019c <div_fail>:
+ 19c:	00100293          	li	x5,1
+ 1a0:	00008067          	ret
+
+00000000000001a4 <div_pass>:
+ 1a4:	00000293          	li	x5,0
+ 1a8:	00008067          	ret
+
+00000000000001ac <test_end>:
+ 1ac:	0000006f          	j	1ac <test_end>

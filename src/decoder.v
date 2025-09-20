@@ -11,7 +11,7 @@ module decoder(
   output logic aluSrcImm,
   output wire [2:0] funct3,
   output wire jalr,
-  output logic [3:0] aluOp,
+  output logic [15:0] aluOp,
   output reg [2:0] immType
 );
 
@@ -43,14 +43,56 @@ always @(*) begin
       immType   = IMM_NONE;
       aluSrcImm = 0;
       case (funct3)
-        3'b000: aluOp = (funct7 == 7'b0100000) ? ALU_SUB : ALU_ADD;
-        3'b001: aluOp = ALU_SLL;
-        3'b010: aluOp = ALU_SLT;
-        3'b011: aluOp = ALU_SLTU;
-        3'b100: aluOp = ALU_XOR;
-        3'b101: aluOp = (funct7 == 7'b0100000) ? ALU_SRA : ALU_SRL;
-        3'b110: aluOp = ALU_OR;
-        3'b111: aluOp = ALU_AND;
+        3'b000:
+          case(funct7)
+            7'h0: aluOp = ALU_ADD;
+            7'h1: aluOp = ALU_MUL;
+            7'h20: aluOp = ALU_SUB;
+            default: aluOp = ALU_NOP;
+          endcase
+        3'b001:
+          case(funct7)
+            7'h0: aluOp = ALU_SLL;
+            7'h1: aluOp = ALU_MULH;
+            default: aluOp = ALU_NOP;
+          endcase
+        3'b010:
+          case(funct7)
+            7'h0: aluOp = ALU_SLT;
+            7'h1: aluOp = ALU_MULHSU;
+            default: aluOp = ALU_NOP;
+          endcase
+        3'b011:
+          case(funct7)
+            7'h0: aluOp = ALU_SLTU;
+            7'h1: aluOp = ALU_MULHU;
+            default: aluOp = ALU_NOP;
+          endcase
+        3'b100:
+            case(funct7)
+                7'h0: aluOp = ALU_XOR;
+                7'h1: aluOp = ALU_DIV;
+                default: aluOp = ALU_NOP;
+            endcase
+        3'b101:
+            case(funct7)
+                7'h0: aluOp = ALU_SRL;
+                7'h1: aluOp = ALU_DIVU;
+                7'h20: aluOp = ALU_SRA;
+                default: aluOp = ALU_NOP;
+            endcase
+        3'b110:
+            case(funct7)
+                7'h0: aluOp = ALU_OR;
+                7'h1: aluOp = ALU_REM;
+                default: aluOp = ALU_NOP;
+            endcase
+        3'b111:
+            case(funct7)
+                7'h0: aluOp = ALU_AND;
+                7'h1: aluOp = ALU_REMU;
+                default: aluOp = ALU_NOP;
+            endcase
       endcase
     end
 
@@ -67,7 +109,7 @@ always @(*) begin
         3'b110: aluOp = ALU_OR;  // ORI
         3'b111: aluOp = ALU_AND; // ANDI
         3'b001: aluOp = ALU_SLL; // SLLI
-        3'b101: aluOp = (funct7 == 7'b0100000) ? ALU_SRA : ALU_SRL;
+        3'b101: aluOp = (funct7 == 7'h20) ? ALU_SRA : ALU_SRL;
       endcase
     end
 
