@@ -12,7 +12,7 @@ typedef enum logic [2:0]
     ENUM_IMM_J
 } imm_type_e;
 
-typedef enum logic [3:0]
+typedef enum logic [15:0]
 {
     ENUM_ALU_ADD, ENUM_ALU_SUB, ENUM_ALU_AND, ENUM_ALU_OR, ENUM_ALU_XOR,
     ENUM_ALU_SLL, ENUM_ALU_SRL, ENUM_ALU_SRA,

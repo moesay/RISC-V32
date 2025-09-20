@@ -3,11 +3,11 @@ module imem#(
   parameter MEM_SIZE_KB = 1
 )
 (
-  input logic [31:0] pc,
-  output wire [31:0] inst
+  input logic [31:0] i_pc,
+  output wire [31:0] o_inst
 );
 logic [31:0] memory [0:(MEM_SIZE_KB*256)-1];
-assign inst = memory[pc >> 2]; //since the addrs are word-aligned, ignore the first two bits
+assign o_inst = memory[i_pc >> 2]; //since the addrs are word-aligned, ignore the first two bits
 
 // for testing
 initial begin

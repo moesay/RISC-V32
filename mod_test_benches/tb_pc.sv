@@ -1,44 +1,44 @@
 `timescale 1ns/1ps
 
 module tb_pc();
-logic clk, reset;
-logic [31:0] nextPC;
-logic [31:0] addr;
+logic i_clk, i_reset;
+logic [31:0] i_nextPC;
+logic [31:0] o_addr;
 
-always #1 clk = ~clk;
+always #1 i_clk = ~i_clk;
 
 pc dut (
-  .clk(clk),
-  .reset(reset),
-  .nextPC(nextPC),
-  .addr(addr)
+  .i_clk(i_clk),
+  .i_reset(i_reset),
+  .i_nextPC(i_nextPC),
+  .o_addr(o_addr)
   );
 
   task check(input [31:0] expected, string msg);
-    if (addr !== expected)
-      $error("%s FAILED: got %h, expected %h", msg, addr, expected);
+    if (o_addr !== expected)
+      $error("%s FAILED: got %h, expected %h", msg, o_addr, expected);
     else
       $display("%s PASSED", msg);
   endtask
 
   initial begin
-    clk = 0;
-    reset = 0;
-    nextPC = 32'h0;
+    i_clk = 0;
+    i_reset = 0;
+    i_nextPC = 32'h0;
 
-    reset = 1;
-    #10; reset = 0;
-    check(32'h0, "Reset check");
+    i_reset = 1;
+    #10; i_reset = 0;
+    check(32'h0, "i_reset check");
 
-    nextPC = addr + 4;
+    i_nextPC = o_addr + 4;
     #10; check(32'h4, "Increment by 4");
-    nextPC = addr + 4;
+    i_nextPC = o_addr + 4;
     #10; check(32'h8, "Increment again");
 
-    nextPC = 32'h40;
+    i_nextPC = 32'h40;
     #10; check(32'h40, "Jump to 0x40");
 
-    nextPC = addr + 4;
+    i_nextPC = o_addr + 4;
     #10; check(32'h44, "Increment after jump");
 
     $display("All tests finished!");

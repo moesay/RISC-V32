@@ -1,49 +1,49 @@
 `timescale 1ns/1ps
 module tb_dmem();
 
-logic clk;
-logic memRead;
-logic memWrite;
-logic [31:0] addr;
-logic [31:0] writeData;
-logic [31:0] readData;
-logic [2:0] funct3;
+logic i_clk;
+logic i_memRead;
+logic i_memWrite;
+logic [31:0] i_addr;
+logic [31:0] i_dataIn;
+logic [31:0] o_dataOut;
+logic [2:0] i_funct3;
 
 
-always #1 assign clk = ~clk;
+always #1 assign i_clk = ~i_clk;
 
 dmem#(.MEM_SIZE_KB(1)) dut
 (
-    .clk(clk),
-    .memRead(memRead),
-    .memWrite(memWrite),
-    .addr(addr),
-    .funct3(funct3),
-    .writeData(writeData),
-    .readData(readData)
+    .i_clk(i_clk),
+    .i_memRead(i_memRead),
+    .i_memWrite(i_memWrite),
+    .i_addr(i_addr),
+    .i_funct3(i_funct3),
+    .i_dataIn(i_dataIn),
+    .o_dataOut(o_dataOut)
 );
 
-task automatic writeToMemory(logic [31:0] pAddr, logic[31:0] pData);
+task automatic writeToMemory(logic [31:0] pi_addr, logic[31:0] pData);
 begin
-    addr = pAddr;
-    funct3 = 3'h2;
-    writeData = pData;
-    memWrite = 1;
-    @(posedge clk)
+    i_addr = pi_addr;
+    i_funct3 = 3'h2;
+    i_dataIn = pData;
+    i_memWrite = 1;
+    @(posedge i_clk)
     #0.001;
-    memWrite = 0;
+    i_memWrite = 0;
 end
 endtask
 
-task automatic memCheck(logic [31:0] pAddr, logic[31:0] pExcpData);
+task automatic memCheck(logic [31:0] pi_addr, logic[31:0] pExcpData);
 begin
-    addr = pAddr;
-    memRead = 1;
+    i_addr = pi_addr;
+    i_memRead = 1;
     #0.001;
-    memRead = 0;
-    assert(pExcpData == readData)
+    i_memRead = 0;
+    assert(pExcpData == o_dataOut)
     else
-        $error("Error reading from %h, expected %h, got %h", pAddr, pExcpData, readData);
+        $error("Error reading from %h, expected %h, got %h", pi_addr, pExcpData, o_dataOut);
 end
 endtask
 

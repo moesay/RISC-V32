@@ -1,65 +1,65 @@
 import types::*;
 module tb_alu();
 
-logic [31:0] a;
-logic [31:0] b;
-logic [31:0] result;
-logic zero;
-alu_op_e aluCtrl;
+logic [31:0] i_a;
+logic [31:0] i_b;
+logic [31:0] o_result;
+logic o_zero;
+alu_op_e i_aluCtrl;
 
 alu dut(
-    .a(a),
-    .b(b),
-    .result(result),
-    .aluCtrl(aluCtrl),
-    .zero(zero));
+    .i_a(i_a),
+    .i_b(i_b),
+    .o_result(o_result),
+    .i_aluCtrl(i_aluCtrl),
+    .o_zero(o_zero));
 
-task automatic check(string msg, logic [31:0] a, logic [31:0] b, alu_op_e aluCtrl);
+task automatic check(string msg, logic [31:0] a, logic [31:0] b, alu_op_e i_aluCtrl);
   #0.1;
-  unique case (aluCtrl)
+  unique case (i_aluCtrl)
   ENUM_ALU_ADD:
-      assert(result === a + b)
+      assert(o_result === a + b)
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_SUB:
-      assert(result === a - b)
+      assert(o_result === a - b)
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_AND:
-      assert(result === (a & b))
+      assert(o_result === (a & b))
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_OR:
-      assert(result === (a | b))
+      assert(o_result === (a | b))
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_XOR:
-      assert(result === (a ^ b))
+      assert(o_result === (a ^ b))
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_SLL:
-      assert(result === (a << b[4:0]))
+      assert(o_result === (a << b[4:0]))
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_SRL:
-      assert(result === (a >> b[4:0]))
+      assert(o_result === (a >> b[4:0]))
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_SRA:
-      assert(result === $signed(a) >>> b[4:0])
+      assert(o_result === $signed(a) >>> b[4:0])
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_SLT:
-      assert(result === (($signed(a) < $signed(b)) ? 32'd1 : 32'd0));
+      assert(o_result === (($signed(a) < $signed(b)) ? 32'd1 : 32'd0));
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
   ENUM_ALU_SLTU:
-      assert(result === ((a < b) ? 32'd1 : 32'd0))
+      assert(o_result === ((a < b) ? 32'd1 : 32'd0))
       else $error("%s FAILED. Parameters are a = %h, b = %h", msg, a, b);
-  default:  result = 32'b0;
+  default:  o_result = 32'b0;
 endcase
 endtask;
 
 initial begin
-  a = 25;
-  b = 10;
-  aluCtrl = ENUM_ALU_ADD;
-  check("ADD", a, b, aluCtrl);
-  aluCtrl = ENUM_ALU_SUB;
-  check("SUB", a, b, aluCtrl);
-  aluCtrl = ENUM_ALU_SRL;
-  check("SRL", a, b, aluCtrl);
+  i_a = 25;
+  i_b = 10;
+  i_aluCtrl = ENUM_ALU_ADD;
+  check("ADD", i_a, i_b, i_aluCtrl);
+  i_aluCtrl = ENUM_ALU_SUB;
+  check("SUB", i_a, i_b, i_aluCtrl);
+  i_aluCtrl = ENUM_ALU_SRL;
+  check("SRL", i_a, i_b, i_aluCtrl);
 end
 
 endmodule;
