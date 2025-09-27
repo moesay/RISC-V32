@@ -7,6 +7,8 @@ TB_DIR = ./mod_test_benches
 
 TB_FILES = $(wildcard $(TB_DIR)/*.sv)
 SRC_FILES = $(wildcard $(SRC_DIR)/*.v)
+FILTER_OUT_SRC_FILES = $(SRC_DIR)/risv.v $(SRC_DIR)/branchUnit.v
+PIPELINING_SRC_FILES = $(filter-out $(FILTER_OUT_SRC_FILES), $(SRC_FILES))
 
 INCLUDE_DIR = ./include
 INCLUDE = types.sv params.vh
@@ -20,7 +22,7 @@ VERILATOR_FLAGS = $(VERILATING_MODE) --trace --prefix $(@) -I$(INCLUDE_DIR)
 
 # ===== Targets =====
 TARGETS = imem regFile pc immGen decoder alu dmem branchUnit
-TEST_PROGRAM ?= $(TEST_BINS_DIR)/full_test.bin
+TEST_PROGRAM ?= $(TEST_BINS_DIR)/pipe.bin
 
 ifeq ($(LINT_ONLY), 0)
 	VERILATING_MODE = --binary
@@ -30,6 +32,9 @@ endif
 
 all:
 	$(VERILATOR_BIN) $(VERILATOR_FLAGS) $(SRC_FILES) $(TB_DIR)/tb_risc.sv --top-module tb_risc -DTEST_PROGRAM=\"$(TEST_PROGRAM)\"
+
+pipelined:
+	$(VERILATOR_BIN) $(VERILATOR_FLAGS) $(PIPELINING_SRC_FILES) --top-module pipe_risc $(TB_DIR)/tb_risc.sv --top-module tb_risc -DTEST_PROGRAM=\"$(TEST_PROGRAM)\"
 
 $(TARGETS):
 	@echo "Verilating $(@)"

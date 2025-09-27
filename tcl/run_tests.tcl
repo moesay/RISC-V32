@@ -6,7 +6,8 @@ set TB_DIR "$PROJECT_DIR/mod_test_benches"
 set INCLUDE_DIR "$PROJECT_DIR/include"
 set TEST_DIR "$PROJECT_DIR/test_bins"
 set WORK_DIR "$PROJECT_DIR/work"
-
+set SRC_FILES [glob $SRC_DIR/*.v]
+set SINGLE_CYCLE_FILES [lsearch -not -inline -all $SRC_FILES "$SRC_DIR/pipelined*"]
 
 file mkdir $WORK_DIR
 
@@ -23,7 +24,7 @@ set SIM_TOOL "verilator"
 set SIM_OPTIONS "--binary --trace --Mdir $WORK_DIR/sim_build -I$INCLUDE_DIR"
 
 proc run_simulation {test_name} {
-  global PROJECT_DIR SRC_DIR TEST_DIR WORK_DIR SIM_OPTIONS TB_DIR
+  global PROJECT_DIR SRC_DIR TEST_DIR WORK_DIR SIM_OPTIONS TB_DIR SINGLE_CYCLE_FILES
 
   puts "=== Running test: $test_name ==="
 
@@ -37,7 +38,7 @@ proc run_simulation {test_name} {
   }
 
   set cmd "verilator $SIM_OPTIONS \
-    $TB_DIR/tb_risc.sv $SRC_DIR/*.v -o $WORK_DIR/sim_build/Vrisc_${test_name} -DTEST_PROGRAM=\\\"$test_bin\\\""
+    $TB_DIR/tb_risc.sv $SINGLE_CYCLE_FILES -o $WORK_DIR/sim_build/Vrisc_${test_name} -DTEST_PROGRAM=\\\"$test_bin\\\""
   exec sh -c $cmd > $log_file
   # exec sh -c $cmd
   # Run the simulation

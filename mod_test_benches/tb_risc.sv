@@ -3,7 +3,7 @@
 module tb_risc;
 logic clk, reset;
 
-risc dut (
+pipe_risc dut (
   .clk(clk),
   .reset(reset)
   );
@@ -16,7 +16,7 @@ risc dut (
 
     #10 reset = 0;
 
-    #1000;
+    #100;
 
     $display("Final Register Values:");
     $display("======================");

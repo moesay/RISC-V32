@@ -1,0 +1,12 @@
+
+pipe.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	00600093          	li	x1,6
+   4:	00a00113          	li	x2,10
+   8:	00400193          	li	x3,4
+   c:	00302023          	sw	x3,0(x0) # 0 <_start>
+  10:	00002203          	lw	x4,0(x0) # 0 <_start>
