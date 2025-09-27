@@ -45,6 +45,7 @@ reg mem_wb_regWrite;
 reg [31:0] mem_wb_aluResult;
 reg [31:0] mem_wb_memReadData;
 reg [4:0] mem_wb_rd;
+reg mem_wb_memRead;
 reg mem_wb_valid;
 
 
@@ -268,18 +269,20 @@ begin
     mem_wb_regWrite = 1'b0;
     mem_wb_aluResult = 32'b0;
     mem_wb_memReadData = 32'b0;
+    mem_wb_memRead = 1'b0;
     mem_wb_rd = 5'b0;
   end else begin
     mem_wb_regWrite <= ex_mem_regWrite;
     mem_wb_aluResult <= ex_mem_aluResult;
     mem_wb_memReadData <= mem_read_data;
     mem_wb_rd <= ex_mem_rd;
+    mem_wb_memRead <= ex_mem_memRead;
   end
 end
 
 // writeback
 wire [31:0] writeBackData;
-assign writeBackData = (ex_mem_memRead ? mem_wb_memReadData : mem_wb_aluResult);
+assign writeBackData = (mem_wb_memRead ? mem_wb_memReadData : mem_wb_aluResult);
 
 // will be enabled later after implementing the hazard detection
 assign if_stall = 1'b0;
