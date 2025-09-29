@@ -3,11 +3,17 @@
 module tb_risc;
 logic clk, reset;
 
-pipe_risc dut (
+`ifdef PIPELINED
+pipelined_risc dut (
   .clk(clk),
   .reset(reset)
   );
-
+`else
+risc dut (
+  .clk(clk),
+  .reset(reset)
+  );
+`endif
   always #1 clk = ~clk;
 
   initial begin
@@ -16,7 +22,7 @@ pipe_risc dut (
 
     #10 reset = 0;
 
-    #100;
+    #1000;
 
     $display("Final Register Values:");
     $display("======================");

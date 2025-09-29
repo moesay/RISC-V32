@@ -1,6 +1,8 @@
-_start:
-    addi x1, x0, 6
-    addi x2, x0, 10
-    addi x3, x0, 4
-    sw x3, 0(x0)
-    lw x4, 0(x0)
+addi x1, x0, 1
+addi x2, x0, 2
+add x3, x1, x2
+
+addi x5, x0, 10
+
+sw   x5, 0(x0)
+lw x4, 0(x0)

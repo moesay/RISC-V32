@@ -34,7 +34,7 @@ all:
 	$(VERILATOR_BIN) $(VERILATOR_FLAGS) $(SRC_FILES) $(TB_DIR)/tb_risc.sv --top-module tb_risc -DTEST_PROGRAM=\"$(TEST_PROGRAM)\"
 
 pipelined:
-	$(VERILATOR_BIN) $(VERILATOR_FLAGS) $(PIPELINING_SRC_FILES) --top-module pipe_risc $(TB_DIR)/tb_risc.sv --top-module tb_risc -DTEST_PROGRAM=\"$(TEST_PROGRAM)\"
+	$(VERILATOR_BIN) $(VERILATOR_FLAGS) $(PIPELINING_SRC_FILES) --top-module pipe_risc $(TB_DIR)/tb_risc.sv --top-module tb_risc -DTEST_PROGRAM=\"$(TEST_PROGRAM)\" -DPIPELINED
 
 $(TARGETS):
 	@echo "Verilating $(@)"
