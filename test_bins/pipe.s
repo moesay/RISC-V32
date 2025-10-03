@@ -1,8 +1,15 @@
-addi x1, x0, 1
-addi x2, x0, 2
-add x3, x1, x2
+addi x5, x0, 1
+addi x6, x0, 2
+add x7, x5, x6
 
-addi x5, x0, 10
+addi x8, x0, 10
 
-sw   x5, 0(x0)
-lw x4, 0(x0)
+jal x1, jmp_target
+
+sw   x7, 0(x0)
+lw x8, 0(x0)
+
+jmp_target:
+addi x5, x0, 2
+addi x6, x0, 2
+add x7, x5, x6

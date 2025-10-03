@@ -1,37 +1,19 @@
 _start:
-    addi x10, x0, 0
-    addi x11, x0, 0
 
-    jal x1, function_a
-    addi x11, x11, 1      # Increment test counter if we return
+addi x3, x0, 10
+addi x4, x0, 10
 
-    jal x2, function_b
-    addi x11, x11, 1
+bne x3, x4, will_j
+addi x30, x30, 1
 
-    addi a0, x0, 5
-    jal x3, function_with_param
-    addi x11, x11, 1
+will_j:
 
-    # all tests completed successfully if x11 == 3
-    addi x10, x0, 1
-    j test_end
+addi x5, x0, 5
+beq x3, x5, willnot_j
+jal stop
 
-function_a:
-    jalr x0, x1, 0
+willnot_j:
+addi x7, x0, 1
 
-function_b:
-    jal x4, function_c
-    jalr x0, x2, 0
+stop:
 
-function_c:
-    jalr x0, x4, 0
-
-function_with_param:
-    addi a0, a0, 10
-    jalr x0, x3, 0
-
-test_fail:
-    addi x10, x0, 0
-
-test_end:
-    j test_end

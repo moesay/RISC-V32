@@ -10,11 +10,11 @@ input logic reset
 // regs for IF_ID
 reg [31:0] if_id_pc;
 reg [31:0] if_id_inst;
-
 reg if_id_valid;
 
 // regs for ID_EX
 reg [31:0] id_ex_pc;
+reg [31:0] id_ex_pc_plus4;
 reg id_ex_regWrite;
 reg id_ex_memRead;
 reg id_ex_memWrite;
@@ -33,6 +33,8 @@ reg [4:0] id_ex_rs2;
 reg id_ex_valid;
 
 // ex_mem regs
+reg [31:0] ex_mem_pc_plus4;
+reg ex_mem_jump_link;
 reg ex_mem_regWrite;
 reg ex_mem_memRead;
 reg ex_mem_memWrite;
@@ -41,16 +43,17 @@ reg [31:0] ex_mem_aluResult;
 reg [31:0] ex_mem_rs2Data;
 reg [4:0] ex_mem_rd;
 reg [4:0] ex_mem_rs2;
-reg em_mem_valid;
+reg ex_mem_valid;
 
 // mem_wb regs
+reg mem_wb_jump_link;
 reg mem_wb_regWrite;
 reg [31:0] mem_wb_aluResult;
 reg [31:0] mem_wb_memReadData;
+reg [31:0] mem_wb_pc_plus4;
 reg [4:0] mem_wb_rd;
 reg mem_wb_memRead;
 reg mem_wb_valid;
-
 
 // wiring
 reg [31:0] pc_current;
@@ -60,16 +63,19 @@ reg [31:0] inst_from_imem;
 // control wires (id stage)
 wire branch_taken_id;
 wire [31:0] branch_target_id;
+wire jalr_taken_ex;
+wire [31:0] jalr_target_ex;
 wire id_flush;
+wire ex_flush;
 wire id_stall;
 wire if_stall;
 
-// pc new logic
 assign pc_plus4 = pc_current + 32'h4;
 
-// pc mux, excluding the increament logic out of the bu
+// pc mux with jalr handling
 wire [31:0] next_pc;
-assign next_pc = (branch_taken_id) ? branch_target_id :
+assign next_pc = (jalr_taken_ex) ? jalr_target_ex :  // priority to jalr (from EX)
+                 (branch_taken_id) ? branch_target_id :  // Then branch/jal (from ID)
                  (if_stall) ? pc_current :
                  pc_plus4;
 
@@ -82,37 +88,32 @@ pc pcMod
 );
 
 // inst fetch
-
 imem#(.MEM_SIZE_KB(2)) iMemMod
 (
   .i_pc(pc_current),
   .o_inst(inst_from_imem)
 );
 
-
-// --- Hazard detection ---
-// maybe in the furure, this will be a separate module
 wire data_hazard;
 
-assign data_hazard = 1'b0;
+assign data_hazard = id_ex_memRead &&
+                    ((id_ex_rd != 0) &&
+                     ((id_ex_rd == rs1) || (id_ex_rd == rs2)));
+
+// flush logic
+assign id_flush = branch_taken_id || jalr_taken_ex;
+assign ex_flush = jalr_taken_ex;  // jalr flushes both IF/ID and ID/EX
 
 // if-id pipeline
 always @(posedge clk or posedge reset)
 begin
-  if(reset)
+  if(reset || id_flush)
     begin
       if_id_pc <= 32'h0;
-      if_id_inst <= 32'h13; // 0x00000013 -> addi x0, x0, 0 (as a nop)
+      if_id_inst <= 32'h13; // NOP
       if_id_valid <= 1'b0;
     end
-  else if(id_flush) // do the same for a pipeline flushing
-    begin
-      if_id_pc <= 32'h0;
-      if_id_inst <= 32'h13; // 0x00000013 -> addi x0, x0, 0 (as a nop)
-      if_id_valid <= 1'b0;
-    end
-
-  else if(~id_stall) // if the cpu not at stall, execture normally
+  else if(~id_stall)
   begin
     if_id_pc <= pc_current;
     if_id_inst <= inst_from_imem;
@@ -162,9 +163,6 @@ wire [4:0] rd_dec = if_id_inst[11:7];
 wire [31:0] rs1Data_dec;
 wire [31:0] rs2Data_dec;
 
-// if the prev inst hasn't written back, we will have a data hazard.
-// TODO: impl a hazard detection module
-
 regFile regFileMod
 (
   .i_clk(clk),
@@ -172,14 +170,15 @@ regFile regFileMod
   .i_regSelect1(rs1),
   .i_regSelect2(rs2),
   .i_writeRegSelect(mem_wb_rd),
-  .i_dataIn(writeBackData), // from the writeback stage MUX
+  .i_dataIn(writeBackData),
   .o_dataOut1(rs1Data_dec),
   .o_dataOut2(rs2Data_dec)
 );
 
+// branch unit only handles branches and JAL (not JALR)
 branchUnit_pipelined branchUnitMod (
   .i_isBranch(branch_dec),
-  .i_isJal(jump_dec),
+  .i_isJal(jump_dec && ~jalr_dec),  // Only JAL, not JALR
   .i_funct3(funct3_dec),
   .i_pc(if_id_pc),
   .i_rs1(rs1Data_dec),
@@ -189,14 +188,13 @@ branchUnit_pipelined branchUnitMod (
   .o_target(branch_target_id)
 );
 
-// if the branch is taken, flush the id regs
-assign id_flush = branch_taken_id;
-
 // id-ex registers updating
 always @(posedge clk or posedge reset)
 begin
-  if (reset || id_flush) begin
+  if (reset || ex_flush) begin
     // Reset all id/ex registers to zero (NOP)
+    id_ex_pc <= 32'b0;
+    id_ex_pc_plus4 <= 32'b0;
     id_ex_regWrite <= 1'b0;
     id_ex_memRead <= 1'b0;
     id_ex_memWrite <= 1'b0;
@@ -207,10 +205,18 @@ begin
     id_ex_rs2Data <= 32'b0;
     id_ex_immVal <= 32'b0;
     id_ex_rd <= 5'b0;
-    id_ex_pc <= 32'b0;
     id_ex_rs1 <= 5'b0;
     id_ex_rs2 <= 5'b0;
-  end else if (~id_stall) begin // only update if not stalled
+    id_ex_jump <= 1'b0;
+    id_ex_branch <= 1'b0;
+    id_ex_jalr <= 1'b0;
+    id_ex_valid <= 1'b0;
+  end else if (~id_stall) begin
+    id_ex_pc <= if_id_pc;
+    id_ex_pc_plus4 <= if_id_pc + 32'h4;  // calculate PC+4 here
+    id_ex_branch <= branch_dec;
+    id_ex_jump <= jump_dec;
+    id_ex_jalr <= jalr_dec;
     id_ex_regWrite <= regWrite_dec;
     id_ex_memRead <= memRead_dec;
     id_ex_memWrite <= memWrite_dec;
@@ -221,14 +227,13 @@ begin
     id_ex_rs2Data <= rs2Data_dec;
     id_ex_immVal <= immVal_dec;
     id_ex_rd <= rd_dec;
-    id_ex_pc <= if_id_pc;
     id_ex_rs1 <= rs1;
     id_ex_rs2 <= rs2;
+    id_ex_valid <= if_id_valid && ~id_flush;
   end
 end
 
-// WAR hazard handeling
-// https://stackoverflow.com/questions/60065175/how-does-data-forwarding-for-data-hazards-work-in-pipeline-diagrams
+// forwarding logic
 wire [1:0] forwardA, forwardB, forwardStoreData;
 assign forwardA = (ex_mem_regWrite && ex_mem_rd != 0 && ex_mem_rd == id_ex_rs1) ? 2'h2 :
                   (mem_wb_regWrite && mem_wb_rd != 0 && mem_wb_rd == id_ex_rs1) ? 2'h1 : 2'h0;
@@ -240,14 +245,27 @@ assign forwardStoreData = (ex_mem_regWrite && ex_mem_rd != 0 && ex_mem_rd == ex_
                           (mem_wb_regWrite && mem_wb_rd != 0 && mem_wb_rd == ex_mem_rs2) ? 2'h1 : 2'h0;
 
 wire [31:0] aluIn1, aluIn2, aluResult, forwardedStoreData;
+wire [31:0] forwarded_rs1;
 
-assign aluIn1 = (forwardA == 2'h2) ? ex_mem_aluResult :
-                (forwardA == 2'h1) ? writeBackData : id_ex_rs1Data;
+// get forwarded rs1 value for JALR
+assign forwarded_rs1 = (forwardA == 2'h2) ? ex_mem_aluResult :
+                       (forwardA == 2'h1) ? writeBackData :
+                       id_ex_rs1Data;
 
-assign aluIn2 = (id_ex_aluSrcImm) ? id_ex_immVal :
+// jalr target calculation (in EX stage)
+assign jalr_taken_ex = id_ex_jalr && id_ex_valid;
+assign jalr_target_ex = (forwarded_rs1 + id_ex_immVal) & ~32'h1;  // Clear LSB as per spec
+
+// ALU input selection
+assign aluIn1 = (id_ex_jump || id_ex_jalr) ? id_ex_pc :  // For link address calculation
+                (id_ex_branch) ? forwarded_rs1 :  // For branch comparison
+                forwarded_rs1;  // Normal operations
+
+assign aluIn2 = (id_ex_jump || id_ex_jalr) ? 32'h4 :  // Add 4 for link address
+                (id_ex_aluSrcImm) ? id_ex_immVal :
                 (forwardB == 2'h2) ? ex_mem_aluResult :
                 (forwardB == 2'h1) ? writeBackData :
-                (id_ex_aluSrcImm) ? id_ex_immVal : id_ex_rs2Data;
+                id_ex_rs2Data;
 
 assign forwardedStoreData = (forwardStoreData == 2'h2) ? ex_mem_aluResult :
                             (forwardStoreData == 2'h1) ? writeBackData :
@@ -267,6 +285,8 @@ alu alu0
 always @(posedge clk or posedge reset)
 begin
   if(reset) begin
+    ex_mem_pc_plus4 <= 32'b0;
+    ex_mem_jump_link <= 1'b0;
     ex_mem_regWrite <= 1'b0;
     ex_mem_memRead <= 1'b0;
     ex_mem_memWrite <= 1'b0;
@@ -275,15 +295,19 @@ begin
     ex_mem_rs2Data <= 32'b0;
     ex_mem_rd <= 5'b0;
     ex_mem_rs2 <= 5'b0;
+    ex_mem_valid <= 1'b0;
   end else begin
+    ex_mem_pc_plus4 <= id_ex_pc_plus4;
+    ex_mem_jump_link <= (id_ex_jump || id_ex_jalr);
     ex_mem_regWrite <= id_ex_regWrite;
     ex_mem_memRead <= id_ex_memRead;
     ex_mem_memWrite <= id_ex_memWrite;
     ex_mem_funct3 <= id_ex_funct3;
-    ex_mem_aluResult <= aluResult;
-    ex_mem_rs2Data <= id_ex_rs2Data; // data in
+    ex_mem_aluResult <= aluResult;  // This now contains PC+4 for JAL/JALR
+    ex_mem_rs2Data <= id_ex_rs2Data;
     ex_mem_rd <= id_ex_rd;
     ex_mem_rs2 <= id_ex_rs2;
+    ex_mem_valid <= id_ex_valid;
   end
 end
 
@@ -296,7 +320,7 @@ dmem#(.MEM_SIZE_KB(1)) dmemMod
   .i_memWrite(ex_mem_memWrite),
   .i_addr(ex_mem_aluResult),
   .i_funct3(ex_mem_funct3),
-  .i_dataIn(forwardedStoreData), // maybe i will mux this
+  .i_dataIn(forwardedStoreData),
   .o_dataOut(mem_read_data)
 );
 
@@ -304,25 +328,50 @@ dmem#(.MEM_SIZE_KB(1)) dmemMod
 always @(posedge clk or posedge reset)
 begin
   if(reset) begin
+    mem_wb_jump_link <= 1'b0;
     mem_wb_regWrite <= 1'b0;
     mem_wb_aluResult <= 32'b0;
     mem_wb_memReadData <= 32'b0;
+    mem_wb_pc_plus4 <= 32'b0;
     mem_wb_memRead <= 1'b0;
     mem_wb_rd <= 5'b0;
+    mem_wb_valid <= 1'b0;
   end else begin
+    mem_wb_jump_link <= ex_mem_jump_link;
     mem_wb_regWrite <= ex_mem_regWrite;
     mem_wb_aluResult <= ex_mem_aluResult;
     mem_wb_memReadData <= mem_read_data;
+    mem_wb_pc_plus4 <= ex_mem_pc_plus4;
     mem_wb_rd <= ex_mem_rd;
     mem_wb_memRead <= ex_mem_memRead;
+    mem_wb_valid <= ex_mem_valid;
   end
 end
 
-// writeback
+// writeback - now properly handles JAL/JALR
 wire [31:0] writeBackData;
-assign writeBackData = (mem_wb_memRead ? mem_wb_memReadData : mem_wb_aluResult);
+assign writeBackData = (mem_wb_memRead) ? mem_wb_memReadData : mem_wb_aluResult;
 
-// will be enabled later after implementing the hazard detection
+// Stall logic
 assign if_stall = data_hazard;
 assign id_stall = data_hazard;
+
+// Debug outputs
+always @(posedge clk) begin
+    if (jalr_taken_ex) begin
+        $display("JALR TAKEN: time=%0t, target=%h, rs1=%h, imm=%h",
+                 $time, jalr_target_ex, forwarded_rs1, id_ex_immVal);
+    end
+
+    if (id_ex_jump && id_ex_valid) begin
+        $display("JAL/JALR EX: pc=%h, pc+4=%h, aluResult=%h, rd=%d",
+                 id_ex_pc, id_ex_pc_plus4, aluResult, id_ex_rd);
+    end
+
+    if (mem_wb_regWrite && mem_wb_valid) begin
+        $display("WB: rd=x%0d, data=%h, jump_link=%b",
+                 mem_wb_rd, writeBackData, mem_wb_jump_link);
+    end
+end
+
 endmodule
