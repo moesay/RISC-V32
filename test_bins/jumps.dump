@@ -6,14 +6,5 @@ Disassembly of section .text:
 
 0000000000000000 <_start>:
    0:	00a00193          	li	x3,10
-   4:	00a00213          	li	x4,10
-   8:	00419463          	bne	x3,x4,10 <will_j>
-   c:	001f0f13          	addi	x30,x30,1
-
-0000000000000010 <will_j>:
-  10:	00500293          	li	x5,5
-  14:	00518463          	beq	x3,x5,1c <willnot_j>
-  18:	008000ef          	jal	x1,20 <stop>
-
-000000000000001c <willnot_j>:
-  1c:	00100393          	li	x7,1
+   4:	00b00213          	li	x4,11
+   8:	003202b3          	add	x5,x4,x3

@@ -2,13 +2,14 @@
 //http://cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf
 `timescale 1ns/1ps
 module decoder(
-  input logic [31:0] i_inst,
+  input  logic [31:0] i_inst,
   output logic o_regWrite,
   output logic o_memRead,
   output logic o_memWrite,
   output logic o_branch,
   output logic o_jump,
   output logic o_aluSrcImm,
+  output logic o_auipc,      // ADD: AUIPC flag
   output wire [2:0] o_funct3,
   output wire o_jalr,
   output logic [15:0] o_aluOp,
@@ -26,20 +27,22 @@ assign o_jalr = (i_inst[6:0] == 7'b1100111);
 
 always @(*) begin
   //init vals
-  o_regWrite = 0;
-  o_memRead = 0;
-  o_memWrite = 0;
-  o_branch = 0;
-  o_jump = 0;
+  o_regWrite  = 0;
+  o_memRead   = 0;
+  o_memWrite  = 0;
+  o_branch    = 0;
+  o_jump      = 0;
   o_aluSrcImm = 0;
-  o_aluOp = ALU_NOP;
-  o_immType = IMM_NONE;
+  o_auipc     = 0;  // Initialize AUIPC flag
+  o_aluOp     = ALU_NOP;
+  o_immType   = IMM_NONE;
 
   case (opcode)
+
     // R type i_inst
     7'b0110011: begin
-      o_regWrite = 1;
-      o_immType = IMM_NONE;
+      o_regWrite  = 1;
+      o_immType   = IMM_NONE;
       o_aluSrcImm = 0;
       case (o_funct3)
         3'b000:
@@ -97,9 +100,9 @@ always @(*) begin
 
     // I type
     7'b0010011: begin
-      o_regWrite = 1;
+      o_regWrite  = 1;
       o_aluSrcImm = 1;
-      o_immType = IMM_I;
+      o_immType   = IMM_I;
       case (o_funct3)
         3'b000: o_aluOp = ALU_ADD; // ADDI
         3'b010: o_aluOp = ALU_SLT; // SLTI
@@ -114,63 +117,65 @@ always @(*) begin
 
     // loads
     7'b0000011: begin
-      o_regWrite = 1;
-      o_memRead = 1;
+      o_regWrite  = 1;
+      o_memRead   = 1;
       o_aluSrcImm = 1;
-      o_immType = IMM_I;
-      o_aluOp = ALU_ADD; // addr = base + offset
+      o_immType   = IMM_I;
+      o_aluOp     = ALU_ADD; // addr = base + offset
     end
 
     // store
     7'b0100011: begin
-      o_memWrite = 1;
+      o_memWrite  = 1;
       o_aluSrcImm = 1;
-      o_immType = IMM_S;
-      o_aluOp = ALU_ADD; // addr = base + offset
+      o_immType   = IMM_S;
+      o_aluOp     = ALU_ADD; // addr = base + offset
     end
 
-    // o_branching
+    // branching
     7'b1100011: begin
-      o_branch = 1;
-      o_immType = IMM_B;
+      o_branch    = 1;
+      o_immType   = IMM_B;
       o_aluSrcImm = 0;
-      o_aluOp = ALU_SUB; // for comparison
+      o_aluOp     = ALU_SUB; // for comparison
     end
 
-    // o_jumps
+    // jumps
     7'b1101111: begin // JAL
-      o_jump = 1;
-      o_regWrite = 1;
-      o_immType = IMM_J;
+      o_jump      = 1;
+      o_regWrite  = 1;
+      o_immType   = IMM_J;
       o_aluSrcImm = 1;
-      o_aluOp = ALU_ADD; // PC + 4 for link register
+      o_aluOp     = ALU_ADD; // PC + 4 for link register
     end
 
     7'b1100111: begin // JALR
-      o_jump = 1;
-      o_regWrite = 1;
+      o_jump      = 1;
+      o_regWrite  = 1;
       o_aluSrcImm = 1;
-      o_immType = IMM_I;
-      o_aluOp = ALU_ADD; // for both: link calculation (PC+4) and target (rs1+imm)
+      o_immType   = IMM_I;
+      o_aluOp     = ALU_ADD; // For link calculation (PC+4)
     end
 
-    // lui
+    // LUI
     7'b0110111: begin
-      o_regWrite = 1;
+      o_regWrite  = 1;
       o_aluSrcImm = 1;
-      o_immType = IMM_U;
-      o_aluOp = ALU_B_PASSTHROUGH; // ie imm << 12
+      o_immType   = IMM_U;
+      o_aluOp     = ALU_B_PASSTHROUGH; // Pass immediate directly
     end
 
-    7'b0010111: begin // AUIPC
-      o_regWrite = 1;
+    // AUIPC - Add Upper Immediate to PC
+    7'b0010111: begin
+      o_regWrite  = 1;
       o_aluSrcImm = 1;
-      o_immType = IMM_U;
-      o_aluOp = ALU_ADD; // PC + imm
+      o_auipc     = 1;  // SET AUIPC FLAG
+      o_immType   = IMM_U;
+      o_aluOp     = ALU_ADD; // PC + imm
     end
 
     default: begin
-    // Unknown opcode
+    // Unknown opcode - keep all signals at default (0/NOP)
     end
   endcase
 end

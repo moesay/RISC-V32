@@ -1,8 +1,3 @@
 00a00193 li x3,10
-00a00213 li x4,10
-00419463 bne x3,x4,10 <will_j>
-001f0f13 addi x30,x30,1
-00500293 li x5,5
-00518463 beq x3,x5,1c <willnot_j>
-008000ef jal x1,20 <stop>
-00100393 li x7,1
+00b00213 li x4,11
+003202b3 add x5,x4,x3
