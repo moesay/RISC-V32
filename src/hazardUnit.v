@@ -1,25 +1,24 @@
 `timescale 1ns/1ps
 
 module hazardUnit (
-  // From ID stage
+  // from id stage
   input logic [4:0] id_rs1,
   input logic [4:0] id_rs2,
   input logic id_branch,
   input logic id_jalr,
 
-  // From ID/EX pipeline register
+  // from id/ex pipeline register
   input logic id_ex_memRead,
   input logic [4:0] id_ex_rd,
 
-  // From EX/MEM pipeline register
+  // from ex/mem pipeline register
   input logic ex_mem_memRead,
   input logic [4:0] ex_mem_rd,
 
-  // Control flow decisions
-  input logic branch_taken_id,   // Branch/JAL taken in ID
-  input logic jalr_taken_ex,     // JALR taken in EX
+  // control flow
+  input logic branch_taken_id,   // branch/jal taken in id
+  input logic jalr_taken_ex,     // jalr taken in ex
 
-  // Hazard outputs
   output logic o_if_stall,
   output logic o_id_stall,
   output logic o_if_flush,
@@ -27,27 +26,42 @@ module hazardUnit (
   output logic o_ex_flush
 );
 
-// Load-use hazard detection
-// Stall if current instruction in ID needs data from a load in EX
-wire load_use_hazard = id_ex_memRead && (id_ex_rd != 0) &&
-                       ((id_ex_rd == id_rs1) || (id_ex_rd == id_rs2));
-
-// JALR data hazard - JALR needs rs1 but it's being loaded
-wire jalr_load_hazard = id_jalr && id_ex_memRead && (id_ex_rd != 0) &&
-                        (id_ex_rd == id_rs1);
-
-// Branch data hazard - Branch needs comparison but data is being loaded
-wire branch_load_hazard = id_branch && id_ex_memRead && (id_ex_rd != 0) &&
+// load-use hazard detection for id/ex
+// stall if current inst in id needs data from a load inst in ex
+wire load_use_hazard_ex = id_ex_memRead && (id_ex_rd != 0) &&
                           ((id_ex_rd == id_rs1) || (id_ex_rd == id_rs2));
 
-// Stall logic
-assign o_if_stall = load_use_hazard || jalr_load_hazard || branch_load_hazard;
-// assign o_id_stall = load_use_hazard || jalr_load_hazard || branch_load_hazard;
+// load-use hazard detection for ex/mem
+// stall if load is in mem stage and inst in id needs it
+wire load_use_hazard_mem = ex_mem_memRead && (ex_mem_rd != 0) &&
+                           ((ex_mem_rd == id_rs1) || (ex_mem_rd == id_rs2));
+
+// jalr data hazard - jalr needs rs1 but its being loaded
+wire jalr_load_hazard_ex = id_jalr && id_ex_memRead && (id_ex_rd != 0) &&
+                           (id_ex_rd == id_rs1);
+
+wire jalr_load_hazard_mem = id_jalr && ex_mem_memRead && (ex_mem_rd != 0) &&
+                            (ex_mem_rd == id_rs1);
+
+// branch data hazard - branch needs comparison but data is being loaded
+wire branch_load_hazard_ex = id_branch && id_ex_memRead && (id_ex_rd != 0) &&
+                             ((id_ex_rd == id_rs1) || (id_ex_rd == id_rs2));
+
+wire branch_load_hazard_mem = id_branch && ex_mem_memRead && (ex_mem_rd != 0) &&
+                              ((ex_mem_rd == id_rs1) || (ex_mem_rd == id_rs2));
+
+// stall logic - stall if hazard in either ex or mem stage
+assign o_if_stall = load_use_hazard_ex || load_use_hazard_mem ||
+                    jalr_load_hazard_ex || jalr_load_hazard_mem ||
+                    branch_load_hazard_ex || branch_load_hazard_mem;
+
+// disable if stalling for now
 assign o_id_stall = 1'b0;
 
-// Flush logic
-// When branch/JAL is taken in ID, flush IF/ID
-// When JALR is taken in EX, flush both IF/ID and ID/EX
+// flush logic:
+// when branch/jal is taken in id, flush if/id
+// when jalr is taken in ex, flush both if/id and id/ex
+
 assign o_if_flush = branch_taken_id || jalr_taken_ex;
 assign o_id_flush = branch_taken_id || jalr_taken_ex;
 assign o_ex_flush = jalr_taken_ex;

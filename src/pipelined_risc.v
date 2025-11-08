@@ -21,6 +21,7 @@ reg id_ex_memWrite;
 reg id_ex_branch;
 reg id_ex_jal;
 reg id_ex_jalr;
+reg id_ex_auipc;  // AUIPC flag
 reg id_ex_aluSrcImm;
 reg [2:0] id_ex_funct3;
 reg [15:0] id_ex_aluOp;
@@ -98,8 +99,8 @@ end
 
 // ============= ID Stage =============
 // Decode signals
-wire regWrite_dec, memRead_dec, memWrite_dec, auipc_dec;
-wire branch_dec, jump_dec, jalr_dec, aluSrcImm_dec;
+wire regWrite_dec, memRead_dec, memWrite_dec;
+wire branch_dec, jump_dec, jalr_dec, auipc_dec, aluSrcImm_dec;
 wire [2:0] funct3_dec;
 wire [15:0] aluOp_dec;
 wire [2:0] immType_dec;
@@ -110,9 +111,9 @@ decoder decoderMod (
   .o_memRead(memRead_dec),
   .o_memWrite(memWrite_dec),
   .o_branch(branch_dec),
-  .o_auipc(auipc_dec),
   .o_jump(jump_dec),
   .o_jalr(jalr_dec),
+  .o_auipc(auipc_dec),
   .o_aluSrcImm(aluSrcImm_dec),
   .o_funct3(funct3_dec),
   .o_aluOp(aluOp_dec),
@@ -149,15 +150,11 @@ regFile regFileMod (
 
 // Forwarding for ID stage (for early branch resolution)
 wire [31:0] rs1_forwarded_id, rs2_forwarded_id;
-assign rs1_forwarded_id = (id_ex_regWrite && id_ex_rd != 0 && id_ex_rd == rs1_addr) ?
-                          id_ex_aluOp == ALU_ADD ? (id_ex_rs1Data + id_ex_immVal) : 32'h0 :  // Simple forward
-                          (ex_mem_regWrite && ex_mem_rd != 0 && ex_mem_rd == rs1_addr) ? ex_mem_aluResult :
+assign rs1_forwarded_id = (ex_mem_regWrite && ex_mem_rd != 0 && ex_mem_rd == rs1_addr) ? ex_mem_aluResult :
                           (mem_wb_regWrite && mem_wb_rd != 0 && mem_wb_rd == rs1_addr) ? writeBackData :
                           rs1_data;
 
-assign rs2_forwarded_id = (id_ex_regWrite && id_ex_rd != 0 && id_ex_rd == rs2_addr) ?
-                          id_ex_aluOp == ALU_ADD ? (id_ex_rs1Data + id_ex_immVal) : 32'h0 :  // Simple forward
-                          (ex_mem_regWrite && ex_mem_rd != 0 && ex_mem_rd == rs2_addr) ? ex_mem_aluResult :
+assign rs2_forwarded_id = (ex_mem_regWrite && ex_mem_rd != 0 && ex_mem_rd == rs2_addr) ? ex_mem_aluResult :
                           (mem_wb_regWrite && mem_wb_rd != 0 && mem_wb_rd == rs2_addr) ? writeBackData :
                           rs2_data;
 
@@ -186,6 +183,7 @@ always @(posedge clk or posedge reset) begin
     id_ex_branch <= 1'b0;
     id_ex_jal <= 1'b0;
     id_ex_jalr <= 1'b0;
+    id_ex_auipc <= 1'b0;
     id_ex_aluSrcImm <= 1'b0;
     id_ex_funct3 <= 3'b0;
     id_ex_aluOp <= ALU_NOP;
@@ -204,6 +202,7 @@ always @(posedge clk or posedge reset) begin
     id_ex_branch <= branch_dec;
     id_ex_jal <= jump_dec && ~jalr_dec;
     id_ex_jalr <= jalr_dec;
+    id_ex_auipc <= auipc_dec;
     id_ex_aluSrcImm <= aluSrcImm_dec;
     id_ex_funct3 <= funct3_dec;
     id_ex_aluOp <= aluOp_dec;
@@ -248,14 +247,13 @@ wire [31:0] alu_in1, alu_in2, alu_result;
 wire alu_zero;
 
 // ALU input selection
-assign alu_in1 = (id_ex_jal || id_ex_jalr) ? id_ex_pc :           // PC for link address
-                 (id_ex_aluOp == ALU_ADD && id_ex_aluSrcImm &&
-                  id_ex_rd != 0 && ~id_ex_memRead && ~id_ex_memWrite && auipc_dec) ? id_ex_pc :  // AUIPC
-                 rs1_forwarded_ex;
+assign alu_in1 = (id_ex_jal || id_ex_jalr) ? id_ex_pc :   // PC for link address
+                 id_ex_auipc ? id_ex_pc :                  // PC for AUIPC
+                 rs1_forwarded_ex;                          // Normal: use rs1
 
-assign alu_in2 = (id_ex_jal || id_ex_jalr) ? 32'd4 :              // +4 for link address
-                 id_ex_aluSrcImm ? id_ex_immVal :
-                 rs2_forwarded_ex;
+assign alu_in2 = (id_ex_jal || id_ex_jalr) ? 32'd4 :      // +4 for link address
+                 id_ex_aluSrcImm ? id_ex_immVal :          // Immediate for I-type, AUIPC, etc.
+                 rs2_forwarded_ex;                          // Normal: use rs2
 
 alu aluMod (
   .i_a(alu_in1),
@@ -344,5 +342,4 @@ hazardUnit hazardMod (
   .o_id_flush(id_flush),
   .o_ex_flush(ex_flush)
 );
-
 endmodule

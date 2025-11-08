@@ -22,7 +22,7 @@ VERILATOR_FLAGS = $(VERILATING_MODE) --trace --prefix $(@) -I$(INCLUDE_DIR)
 
 # ===== Targets =====
 TARGETS = imem regFile pc immGen decoder alu dmem branchUnit
-TEST_PROGRAM ?= $(TEST_BINS_DIR)/basic_arithmetic.bin
+TEST_PROGRAM ?= $(TEST_BINS_DIR)/jumps.bin
 
 ifeq ($(LINT_ONLY), 0)
 	VERILATING_MODE = --binary
