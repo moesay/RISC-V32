@@ -1,0 +1,19 @@
+
+pipe.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+0000000000000000 <jmp_target-0x1c>:
+   0:	00100293          	li	x5,1
+   4:	00200313          	li	x6,2
+   8:	006283b3          	add	x7,x5,x6
+   c:	00a00413          	li	x8,10
+  10:	00c000ef          	jal	x1,1c <jmp_target>
+  14:	00702023          	sw	x7,0(x0) # 0 <jmp_target-0x1c>
+  18:	00002403          	lw	x8,0(x0) # 0 <jmp_target-0x1c>
+
+000000000000001c <jmp_target>:
+  1c:	00200293          	li	x5,2
+  20:	00200313          	li	x6,2
+  24:	006283b3          	add	x7,x5,x6

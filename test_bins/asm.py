@@ -16,7 +16,7 @@ def assemble_and_extract(asm_file):
     filter_file = base + "_filterlist.txt"
 
     subprocess.run(
-        ["riscv64-unknown-elf-as", asm_file, "-o", elf_file],
+        ["riscv64-unknown-elf-as", asm_file, "-o", elf_file, "-march=rv32im"],
         check=True
     )
 

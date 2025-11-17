@@ -6,7 +6,16 @@ set TB_DIR "$PROJECT_DIR/mod_test_benches"
 set INCLUDE_DIR "$PROJECT_DIR/include"
 set TEST_DIR "$PROJECT_DIR/test_bins"
 set WORK_DIR "$PROJECT_DIR/work"
+set SRC_FILES [glob $SRC_DIR/*.v]
+set SINGLE_CYCLE_FILES [lsearch -not -inline -all $SRC_FILES "$SRC_DIR/pipelined*"]
+set EXCLUDED_FILES {risc.v branchUnit.v}
+set PIPELINED_FILES {}
 
+foreach f $SRC_FILES {
+  if {[lsearch -exact $EXCLUDED_FILES [file tail $f]] < 0} {
+    lappend PIPELINED_FILES $f
+  }
+}
 
 file mkdir $WORK_DIR
 
@@ -23,7 +32,7 @@ set SIM_TOOL "verilator"
 set SIM_OPTIONS "--binary --trace --Mdir $WORK_DIR/sim_build -I$INCLUDE_DIR"
 
 proc run_simulation {test_name} {
-  global PROJECT_DIR SRC_DIR TEST_DIR WORK_DIR SIM_OPTIONS TB_DIR
+  global PROJECT_DIR SRC_DIR TEST_DIR WORK_DIR SIM_OPTIONS TB_DIR PIPELINED_FILES
 
   puts "=== Running test: $test_name ==="
 
@@ -37,7 +46,7 @@ proc run_simulation {test_name} {
   }
 
   set cmd "verilator $SIM_OPTIONS \
-    $TB_DIR/tb_risc.sv $SRC_DIR/*.v -o $WORK_DIR/sim_build/Vrisc_${test_name} -DTEST_PROGRAM=\\\"$test_bin\\\""
+    $TB_DIR/tb_risc.sv $PIPELINED_FILES -o $WORK_DIR/sim_build/Vrisc_${test_name} --top-module tb_risc -DPIPELINED -DTEST_PROGRAM=\\\"$test_bin\\\""
   exec sh -c $cmd > $log_file
   # exec sh -c $cmd
   # Run the simulation
@@ -71,8 +80,9 @@ proc check_results {test_name} {
       set r1 [regexp -line {^x1\s*=\s*([0-9]+)} $results -> v1]
       set r2 [regexp -line {^x2\s*=\s*([0-9]+)} $results -> v2]
       set r3 [regexp -line {^x3\s*=\s*([0-9]+)} $results -> v3]
-      if {$r1 && $r2 && $r3} {
-        if {$v1 == 5 && $v2 == 10 && $v3 == 15} {
+      set r4 [regexp -line {^x10\s*=\s*([0-9]+)} $results -> v4]
+      if {$r1 && $r2 && $r3 && $r4} {
+        if {$v1 == 5 && $v2 == 10 && $v3 == 15 && $v4 == 1} {
           return 1
         }
       }

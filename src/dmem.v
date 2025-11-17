@@ -15,7 +15,7 @@ module dmem#(
 logic [31:0] internalMem [0:(MEM_SIZE_KB * 256)-1];
 logic [31:0] shiftedAddr;
 
-assign shiftedAddr = i_addr << 2;
+assign shiftedAddr = i_addr >> 2;
 
 always @(*)
 begin
@@ -60,6 +60,8 @@ begin
   end
 end
 
+//TODO:
+//SB, SH implementation
 always @(posedge i_clk)
 begin
   if(i_memWrite)

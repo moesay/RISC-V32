@@ -26,7 +26,7 @@ imem#(.MEM_SIZE_KB(2)) imemMod
   .o_inst(inst)
 );
 
-wire regWrite, memRead, memWrite, branch, jump, aluSrcImm, jalr;
+wire regWrite, memRead, memWrite, branch, jump, aluSrcImm, jalr, auipc;
 wire [2:0] funct3;
 wire [15:0] aluOp;
 wire [2:0] immType;
@@ -39,6 +39,7 @@ decoder decoderMod
   .o_memWrite(memWrite),
   .o_branch(branch),
   .o_jump(jump),
+  .o_auipc(auipc),
   .o_aluSrcImm(aluSrcImm),
   .o_jalr(jalr),
   .o_funct3(funct3),

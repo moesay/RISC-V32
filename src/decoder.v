@@ -9,6 +9,7 @@ module decoder(
   output logic o_branch,
   output logic o_jump,
   output logic o_aluSrcImm,
+  output logic o_auipc,      // ADD: AUIPC flag
   output wire [2:0] o_funct3,
   output wire o_jalr,
   output logic [15:0] o_aluOp,
@@ -32,6 +33,7 @@ always @(*) begin
   o_branch    = 0;
   o_jump      = 0;
   o_aluSrcImm = 0;
+  o_auipc     = 0;  // Initialize AUIPC flag
   o_aluOp     = ALU_NOP;
   o_immType   = IMM_NONE;
 
@@ -130,7 +132,7 @@ always @(*) begin
       o_aluOp     = ALU_ADD; // addr = base + offset
     end
 
-    // o_branching
+    // branching
     7'b1100011: begin
       o_branch    = 1;
       o_immType   = IMM_B;
@@ -138,36 +140,42 @@ always @(*) begin
       o_aluOp     = ALU_SUB; // for comparison
     end
 
-    // o_jumps
+    // jumps
     7'b1101111: begin // JAL
-    o_jump      = 1;
-    o_regWrite  = 1;
-    o_immType   = IMM_J;
-    end
-    7'b1100111: begin // o_jalr
-    o_jump      = 1;
-    o_regWrite  = 1;
-    o_aluSrcImm = 1;
-    o_immType   = IMM_I;
+      o_jump      = 1;
+      o_regWrite  = 1;
+      o_immType   = IMM_J;
+      o_aluSrcImm = 1;
+      o_aluOp     = ALU_ADD; // PC + 4 for link register
     end
 
-    // lui
+    7'b1100111: begin // JALR
+      o_jump      = 1;
+      o_regWrite  = 1;
+      o_aluSrcImm = 1;
+      o_immType   = IMM_I;
+      o_aluOp     = ALU_ADD; // For link calculation (PC+4)
+    end
+
+    // LUI
     7'b0110111: begin
-    o_regWrite  = 1;
-    o_aluSrcImm = 1;
-    o_immType   = IMM_U;
-    o_aluOp     = ALU_B_PASSTHROUGH; // ie imm << 12
+      o_regWrite  = 1;
+      o_aluSrcImm = 1;
+      o_immType   = IMM_U;
+      o_aluOp     = ALU_B_PASSTHROUGH; // Pass immediate directly
     end
 
-    7'b0010111: begin // AUIPC
-    o_regWrite  = 1;
-    o_aluSrcImm = 1;
-    o_immType   = IMM_U;
-    o_aluOp     = ALU_ADD; // PC + imm
+    // AUIPC - Add Upper Immediate to PC
+    7'b0010111: begin
+      o_regWrite  = 1;
+      o_aluSrcImm = 1;
+      o_auipc     = 1;  // SET AUIPC FLAG
+      o_immType   = IMM_U;
+      o_aluOp     = ALU_ADD; // PC + imm
     end
 
     default: begin
-    // Unknown opcode
+    // Unknown opcode - keep all signals at default (0/NOP)
     end
   endcase
 end

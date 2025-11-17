@@ -3,11 +3,17 @@
 module tb_risc;
 logic clk, reset;
 
+`ifdef PIPELINED
+pipelined_risc dut (
+  .clk(clk),
+  .reset(reset)
+  );
+`else
 risc dut (
   .clk(clk),
   .reset(reset)
   );
-
+`endif
   always #1 clk = ~clk;
 
   initial begin
