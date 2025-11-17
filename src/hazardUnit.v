@@ -9,6 +9,7 @@ module hazardUnit (
 
   // from id/ex pipeline register
   input logic id_ex_memRead,
+  input logic id_ex_regWrite,
   input logic [4:0] id_ex_rd,
 
   // from ex/mem pipeline register
@@ -31,29 +32,24 @@ module hazardUnit (
 wire load_use_hazard_ex = id_ex_memRead && (id_ex_rd != 0) &&
                           ((id_ex_rd == id_rs1) || (id_ex_rd == id_rs2));
 
-// load-use hazard detection for ex/mem
-// stall if load is in mem stage and inst in id needs it
-wire load_use_hazard_mem = ex_mem_memRead && (ex_mem_rd != 0) &&
-                           ((ex_mem_rd == id_rs1) || (ex_mem_rd == id_rs2));
 
 // jalr data hazard - jalr needs rs1 but its being loaded
 wire jalr_load_hazard_ex = id_jalr && id_ex_memRead && (id_ex_rd != 0) &&
                            (id_ex_rd == id_rs1);
 
-wire jalr_load_hazard_mem = id_jalr && ex_mem_memRead && (ex_mem_rd != 0) &&
-                            (ex_mem_rd == id_rs1);
-
 // branch data hazard - branch needs comparison but data is being loaded
 wire branch_load_hazard_ex = id_branch && id_ex_memRead && (id_ex_rd != 0) &&
                              ((id_ex_rd == id_rs1) || (id_ex_rd == id_rs2));
 
-wire branch_load_hazard_mem = id_branch && ex_mem_memRead && (ex_mem_rd != 0) &&
-                              ((ex_mem_rd == id_rs1) || (ex_mem_rd == id_rs2));
+wire branch_data_hazard_id_ex = (id_branch || id_jalr) &&
+                                 id_ex_regWrite && (id_ex_rd != 0) &&
+                                 ((id_ex_rd == id_rs1) || (id_ex_rd == id_rs2));
 
-// stall logic - stall if hazard in either ex or mem stage
-assign o_if_stall = load_use_hazard_ex || load_use_hazard_mem ||
-                    jalr_load_hazard_ex || jalr_load_hazard_mem ||
-                    branch_load_hazard_ex || branch_load_hazard_mem;
+// stall logic - only stall when load is in EX stage
+assign o_if_stall = load_use_hazard_ex ||
+                    jalr_load_hazard_ex ||
+                    branch_load_hazard_ex ||
+                    branch_data_hazard_id_ex;
 
 // disable if stalling for now
 assign o_id_stall = 1'b0;
