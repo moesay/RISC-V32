@@ -67,9 +67,9 @@ wire [31:0] link_addr_id, link_addr_ex;
 
 // ============= IF Stage =============
 // PC selection logic
-assign pc_next = jalr_taken_ex ? jalr_target_ex :      // JALR has priority (from EX)
+assign pc_next = if_stall ? pc_current :                // Stall has highest priority
+                 jalr_taken_ex ? jalr_target_ex :      // JALR has priority (from EX)
                  branch_taken_id ? jump_target_id :     // Branch/JAL (from ID)
-                 if_stall ? pc_current :                // Stall
                  pc_current + 32'd4;                    // Normal increment
 
 pc pcMod (
@@ -176,6 +176,26 @@ jumpBranchUnit jbuID (
 // ID/EX Pipeline Register
 always @(posedge clk or posedge reset) begin
   if (reset || id_flush) begin
+    id_ex_pc <= 32'h0;
+    id_ex_regWrite <= 1'b0;
+    id_ex_memRead <= 1'b0;
+    id_ex_memWrite <= 1'b0;
+    id_ex_branch <= 1'b0;
+    id_ex_jal <= 1'b0;
+    id_ex_jalr <= 1'b0;
+    id_ex_auipc <= 1'b0;
+    id_ex_aluSrcImm <= 1'b0;
+    id_ex_funct3 <= 3'b0;
+    id_ex_aluOp <= ALU_NOP;
+    id_ex_rs1Data <= 32'b0;
+    id_ex_rs2Data <= 32'b0;
+    id_ex_immVal <= 32'b0;
+    id_ex_rd <= 5'b0;
+    id_ex_rs1 <= 5'b0;
+    id_ex_rs2 <= 5'b0;
+    id_ex_valid <= 1'b0;
+  end else if (if_stall) begin
+    // Insert bubble (NOP) when stalling
     id_ex_pc <= 32'h0;
     id_ex_regWrite <= 1'b0;
     id_ex_memRead <= 1'b0;
@@ -327,6 +347,7 @@ hazardUnit hazardMod (
 
   // From pipeline registers
   .id_ex_memRead(id_ex_memRead),
+  .id_ex_regWrite(id_ex_regWrite),
   .id_ex_rd(id_ex_rd),
   .ex_mem_memRead(ex_mem_memRead),
   .ex_mem_rd(ex_mem_rd),
